@@ -1,0 +1,40 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install arm-none-eabi
+      run: sudo apt install gcc-arm-none-eabi
+    - name: make Board-tester
+      run: |
+        cd Board-tester
+        pwd
+        make -f Makefile.GD32 clean
+        make -f Makefile.GD32
+        cd -
+    - name: make gd32_dmx_usb_pro
+      run: |
+        cd gd32_dmx_usb_pro
+        pwd
+        make -f Makefile.GD32 clean
+        make -f Makefile.GD32
+        cd -
+    - name: make gd32_rdm_responder
+      run: |
+        cd gd32_rdm_responder
+        pwd
+        make -f Makefile.GD32 clean
+        make -f Makefile.GD32
+        cd -
+ 
+      

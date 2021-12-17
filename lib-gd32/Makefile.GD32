@@ -1,0 +1,18 @@
+$(info $$FAMILY [${FAMILY}])
+
+ifeq ($(FAMILY),)
+	FAMILY=gd32f20x
+endif
+
+$(info $$FAMILY [${FAMILY}])
+
+ifeq ($(findstring gd32f20x,$(FAMILY)), gd32f20x)
+	EXTRA_SRCDIR=gd32f20x/CMSIS/GD/GD32F20x/Source
+	EXTRA_SRCDIR+=gd32f20x/GD32F20x_standard_peripheral/Source
+	EXTRA_SRCDIR+=device/emac
+else
+	EXTRA_SRCDIR=gd32f10x/CMSIS/GD/GD32F10x/Source
+	EXTRA_SRCDIR+=gd32f10x/GD32F10x_standard_peripheral/Source
+endif
+
+include ../firmware-template-gd32/lib/Rules.mk
