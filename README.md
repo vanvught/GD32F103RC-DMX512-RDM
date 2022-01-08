@@ -8,7 +8,7 @@
 # GD32F103RC-DMX512-RDM
 The master source code is available here -> [https://github.com/vanvught/rpidmx512](https://github.com/vanvught/rpidmx512)
 
-A development board is available here -> [https://github.com/vanvught/GD32F103R-GD32F207R-dev-board](https://github.com/vanvught/GD32F103R-GD32F207R-dev-board)
+A development board is available here -> [https://github.com/vanvught/GD32F103R-GD32F107R-GD32F207R-dev-board](https://github.com/vanvught/GD32F103R-GD32F107R-GD32F207R-dev-board)
 
 Full documentation will be available here -> [https://www.gd32-dmx.org](https://www.gd32-dmx.org)
 
@@ -17,7 +17,7 @@ Full documentation will be available here -> [https://www.gd32-dmx.org](https://
 ### DMX USB Pro
 Open source GD32F103RC RDM Controller with USB, DMX512 isolated board and compatible with software that supports Enttec USB Pro.
 
-A DMX512 RDM isolated with USB (FT245RL) extenstion board can be ordered here [https://www.bitwizard.nl/shop/raspberry-pi?product_id=154]()
+A DMX512 RDM isolated with USB (FT245RL) extenstion board can be ordered here [https://www.bitwizard.nl/shop/raspberry-pi?product_id=154](https://www.bitwizard.nl/shop/raspberry-pi?product_id=154) -> Option: Model Orange Pi for use with the development board.
 
 ### RDM Responder Pixel Controller
 [Supported PIDs](RDM.md)

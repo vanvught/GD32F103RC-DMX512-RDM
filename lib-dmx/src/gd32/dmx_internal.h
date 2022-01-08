@@ -35,42 +35,42 @@
 static uint32_t _port_to_uart(uint32_t nPort) {
 	switch (nPort) {
 #if defined (DMX_USE_USART0)
-	case dmxmulti::config::USART0_PORT:
+	case dmx::config::USART0_PORT:
 		return USART0;
 		break;
 #endif
 #if defined (DMX_USE_USART1)
-	case dmxmulti::config::USART1_PORT:
+	case dmx::config::USART1_PORT:
 		return USART1;
 		break;
 #endif
 #if defined (DMX_USE_USART2)
-	case dmxmulti::config::USART2_PORT:
+	case dmx::config::USART2_PORT:
 		return USART2;
 		break;
 #endif
 #if defined (DMX_USE_UART3)
-	case dmxmulti::config::UART3_PORT:
+	case dmx::config::UART3_PORT:
 		return UART3;
 		break;
 #endif
 #if defined (DMX_USE_UART4)
-	case dmxmulti::config::UART4_PORT:
+	case dmx::config::UART4_PORT:
 		return UART4;
 		break;
 #endif
 #if defined (DMX_USE_USART5)
-	case dmxmulti::config::USART5_PORT:
+	case dmx::config::USART5_PORT:
 		return USART5;
 		break;
 #endif
 #if defined (DMX_USE_UART6)
-	case dmxmulti::config::UART6_PORT:
+	case dmx::config::UART6_PORT:
 		return UART6;
 		break;
 #endif
 #if defined (DMX_USE_UART7)
-	case dmxmulti::config::UART7_PORT:
+	case dmx::config::UART7_PORT:
 		return UART7;
 		break;
 #endif

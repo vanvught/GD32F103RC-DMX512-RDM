@@ -26,7 +26,6 @@ SOURCE = ./
 FIRMWARE_DIR = ./../firmware-template-gd32/
 LINKER = $(FIRMWARE_DIR)/gd32f103rc_flash.ld
 
-COND=1
 include ../firmware-template/libs.mk
 
 LIBS+=c++ c gd32
@@ -124,11 +123,11 @@ $(LIBDEP):
 $(BUILD_DIRS) :
 	mkdir -p $(BUILD_DIRS)
 
-$(BUILD)startup_$(FAMILY)_cl.o : $(FIRMWARE_DIR)/startup_$(FAMILY)_hd.S
-	$(AS) $(COPS) -D__ASSEMBLY__ -c $(FIRMWARE_DIR)/startup_$(FAMILY)_hd.S -o $(BUILD)startup_$(FAMILY)_cl.o
+$(BUILD)startup_$(FAMILY)_hd.o : $(FIRMWARE_DIR)/startup_$(FAMILY)_hd.S
+	$(AS) $(COPS) -D__ASSEMBLY__ -c $(FIRMWARE_DIR)/startup_$(FAMILY)_hd.S -o $(BUILD)startup_$(FAMILY)_hd.o
 	
-$(BUILD)main.elf: Makefile.GD32 $(LINKER) $(BUILD)startup_$(FAMILY)_cl.o $(OBJECTS) $(LIBDEP)
-	$(LD) $(BUILD)startup_$(FAMILY)_cl.o $(OBJECTS) -Map $(MAP) -T $(LINKER) $(LDOPS) -o $(BUILD)main.elf $(LIBGD32) $(LDLIBS) $(PLATFORM_LIBGCC) -lgcc 
+$(BUILD)main.elf: Makefile.GD32 $(LINKER) $(BUILD)startup_$(FAMILY)_hd.o $(OBJECTS) $(LIBDEP)
+	$(LD) $(BUILD)startup_$(FAMILY)_hd.o $(OBJECTS) -Map $(MAP) -T $(LINKER) $(LDOPS) -o $(BUILD)main.elf $(LIBGD32) $(LDLIBS) $(PLATFORM_LIBGCC) -lgcc 
 	$(PREFIX)objdump -D $(BUILD)main.elf | $(PREFIX)c++filt > $(LIST)
 	$(PREFIX)size -A -x $(BUILD)main.elf
 

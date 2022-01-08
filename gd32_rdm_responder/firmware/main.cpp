@@ -60,8 +60,6 @@
 
 #include "is_config_mode.h"
 
-#include "debug.h"
-
 class Reboot final: public RebootHandler {
 public:
 	void Run() override {

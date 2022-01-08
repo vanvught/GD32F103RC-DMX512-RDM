@@ -18,23 +18,19 @@ jobs:
     - name: make Board-tester
       run: |
         cd Board-tester
-        pwd
         make -f Makefile.GD32 clean
         make -f Makefile.GD32
         cd -
     - name: make gd32_dmx_usb_pro
       run: |
         cd gd32_dmx_usb_pro
-        pwd
         make -f Makefile.GD32 clean
         make -f Makefile.GD32
         cd -
     - name: make gd32_rdm_responder
       run: |
         cd gd32_rdm_responder
-        pwd
         make -f Makefile.GD32 clean
         make -f Makefile.GD32
         cd -
- 
-      
+

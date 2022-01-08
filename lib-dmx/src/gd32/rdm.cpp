@@ -2,7 +2,7 @@
  * @file rdm.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 
 #include "rdm.h"
 
-#include "dmxmulti.h"
+#include "dmx.h"
 #include "dmxconst.h"
 #include "dmx_internal.h"
 
@@ -38,12 +38,10 @@
 
 #include "debug.h"
 
-using namespace dmxmulti;
+static uint8_t s_TransactionNumber[dmx::config::max::OUT];
+static uint32_t s_nLastSendMicros[dmx::config::max::OUT];
 
-static uint8_t s_TransactionNumber[config::max::OUT];
-static uint32_t s_nLastSendMicros[config::max::OUT];
-
-extern volatile uint16_t gv_RdmDataReceiveEnd;
+extern volatile uint32_t gv_RdmDataReceiveEnd;
 
 void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmMessage, uint32_t nSpacingMicros) {
 	DEBUG_PRINTF("nPort=%u, pRdmData=%p, nSpacingMicros=%u", nPort, pRdmMessage, nSpacingMicros);
@@ -87,12 +85,8 @@ void Rdm::SendRawRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
-	const uint16_t nDelay = static_cast<uint16_t>(TIMER_CNT(TIMER9)) - gv_RdmDataReceiveEnd;
-
 	// 3.2.2 Responder Packet spacing
-	if (nDelay < RDM_RESPONDER_PACKET_SPACING) {
-		udelay(RDM_RESPONDER_PACKET_SPACING - nDelay);
-	}
+	udelay(RDM_RESPONDER_PACKET_SPACING, gv_RdmDataReceiveEnd);
 
 	SendRaw(nPort, pRdmData, nLength);
 }
@@ -103,12 +97,8 @@ void Rdm::SendDiscoveryRespondMessage(uint32_t nPort, const uint8_t *pRdmData, u
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
-	const uint16_t nDelay = static_cast<uint16_t>(TIMER_CNT(TIMER9)) - gv_RdmDataReceiveEnd;
-
 	// 3.2.2 Responder Packet spacing
-	if (nDelay < RDM_RESPONDER_PACKET_SPACING) {
-		udelay(RDM_RESPONDER_PACKET_SPACING - nDelay);
-	}
+	udelay(RDM_RESPONDER_PACKET_SPACING, gv_RdmDataReceiveEnd);
 
 	Dmx::Get()->SetPortDirection(nPort, dmx::PortDirection::OUTP, false);
 

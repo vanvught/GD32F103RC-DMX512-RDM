@@ -2,7 +2,7 @@
  * @file hardware.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,9 +45,11 @@
 
 extern "C" {
 void systick_config(void);
-void udelay_init(void);
-void micros_init(void);
 }
+
+void micros_init();
+void udelay_init();
+void gd32_adc_init();
 
 Hardware *Hardware::s_pThis = nullptr;
 
@@ -60,7 +62,6 @@ Hardware::Hardware() {
     GPIO_BC(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
 
 	uart0_init();
-
     systick_config();
     udelay_init();
     micros_init();
@@ -69,7 +70,7 @@ Hardware::Hardware() {
 
 	timer_deinit(TIMER5);
 	timer_parameter_struct timer_initpara;
-	timer_initpara.prescaler = 119;	///< TIMER1CLK = SystemCoreClock / 120 = 1MHz => us ticker
+	timer_initpara.prescaler = TIMER_PSC_1MHZ;
 	timer_initpara.period = static_cast<uint32_t>(~0);
 	timer_init(TIMER5, &timer_initpara);
 	timer_enable(TIMER5);

@@ -71,7 +71,7 @@ public:
 			return nullptr;
 		}
 
-		if (Dmx::GetUpdatesPerSecond() == 0) {
+		if (Dmx::GetUpdatesPerSecond(0) == 0) {
 			if (s_IsActive) {
 				s_pLightSet->Stop(0);
 				s_IsActive = false;
@@ -81,7 +81,7 @@ public:
 			nLength = -1;
 			return nullptr;
 		} else {
-			const auto *pDmx = Dmx::GetDmxAvailable();
+			const auto *pDmx = Dmx::GetDmxAvailable(0);
 
 			if (pDmx != nullptr) {
 				const auto *pDmxStatistics = reinterpret_cast<const struct Data*>(pDmx);
@@ -107,6 +107,14 @@ public:
 
 	void SetDisableOutput(bool bDisable = true) {
 		s_bDisableOutput = bDisable;
+	}
+
+	uint32_t GetUpdatesPerSecond(uint32_t nPortIndex) {
+		return Dmx::GetUpdatesPerSecond(nPortIndex);
+	}
+
+	const uint8_t* GetDmxCurrentData(uint32_t nPortIndex) {
+		return Dmx::GetDmxCurrentData(nPortIndex);
 	}
 
 	void Print() {

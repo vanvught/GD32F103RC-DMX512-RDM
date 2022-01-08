@@ -25,17 +25,16 @@ SECTIONS
   .text :
   {
     . = ALIGN(4);
-    *(.text)
-    *(.text*)
-    *(.glue_7) 
-    *(.glue_7t)
-    *(.eh_frame)
+	*(.text)
+	*(.text*)
+	*(.glue_7)
+	*(.glue_7t)
+	*(.eh_frame)
 
     KEEP (*(.init))
     KEEP (*(.fini))
 
     . = ALIGN(4);
-    /* the symbol ��_etext�� will be defined at the end of code section */
     _etext = .;
   } >FLASH
 
@@ -66,7 +65,7 @@ SECTIONS
     KEEP (*(.preinit_array*))
     PROVIDE_HIDDEN (__preinit_array_end = .);
   } >FLASH
-  
+
   .init_array :
   {
     PROVIDE_HIDDEN (__init_array_start = .);
@@ -74,7 +73,7 @@ SECTIONS
     KEEP (*(.init_array*))
     PROVIDE_HIDDEN (__init_array_end = .);
   } >FLASH
-  
+
   .fini_array :
   {
     PROVIDE_HIDDEN (__fini_array_start = .);
@@ -88,26 +87,24 @@ SECTIONS
   .data :
   {
     . = ALIGN(4);
-    /* the symbol ��_sdata�� will be defined at the data section end start */
     _sdata = .;
     *(.data)
     *(.data*)
+
     . = ALIGN(4);
-    /* the symbol ��_edata�� will be defined at the data section end */
     _edata = .;
   } >RAM AT> FLASH
 
   . = ALIGN(4);
   .bss :
   {
-    /* the symbol ��_sbss�� will be defined at the bss section start */
     _sbss = .;
     __bss_start__ = _sbss;
     *(.bss)
     *(.bss*)
     *(COMMON)
+    
     . = ALIGN(4);
-    /* the symbol ��_ebss�� will be defined at the bss section end */
     _ebss = .;
     __bss_end__ = _ebss;
   } >RAM
@@ -133,13 +130,13 @@ SECTIONS
     PROVIDE( _sp = . ); 
     . = ALIGN(4);
   } >RAM AT>RAM
-  
+
   /DISCARD/ :
   {
 	*(*.ARM.attributes)
 	*(*.comment)
 	*(*.debug*)
-  }	
+  }
 }
 
  /* input sections */

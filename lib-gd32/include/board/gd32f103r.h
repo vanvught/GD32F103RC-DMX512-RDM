@@ -1,8 +1,8 @@
 /**
- * @file gd32f103rc.h
+ * @file gd32f103r.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@
 # error This file should not be included
 #endif
 
-#if defined (MCU_GD32F103_H_)
+#if defined (MCU_GD32F10X_H_)
 # error This file should be included later
 #endif
 
@@ -38,42 +38,62 @@
  * LEDs
  */
 
-#define LED_BLINK_PIN       GPIO_PIN_0
-#define LED_BLINK_GPIO_PORT GPIOC
-#define LED_BLINK_GPIO_CLK	RCU_GPIOC
+#define LED1_GPIO_PINx		GPIO_PIN_0
+#define LED1_GPIOx			GPIOC
+#define LED1_RCU_GPIOx		RCU_GPIOC
 
-#define LED1_PIN            GPIO_PIN_2
-#define LED1_GPIO_PORT      GPIOC
-#define LED1_GPIO_CLK       RCU_GPIOC
+#define LED2_GPIO_PINx		GPIO_PIN_2
+#define LED2_GPIOx			GPIOC
+#define LED2_RCU_GPIOx		RCU_GPIOC
 
-#define LED2_PIN            GPIO_PIN_0
-#define LED2_GPIO_PORT      GPIOE
-#define LED2_GPIO_CLK       RCU_GPIOE
+#define LED3_GPIO_PINx		GPIO_PIN_3
+#define LED3_GPIOx			GPIOC
+#define LED3_RCU_GPIOx		RCU_GPIOC
 
-#define LED3_PIN            GPIO_PIN_1
-#define LED3_GPIO_PORT      GPIOE
-#define LED3_GPIO_CLK       RCU_GPIOE
+#define LED_BLINK_PIN       LED1_GPIO_PINx
+#define LED_BLINK_GPIO_PORT LED1_GPIOx
+#define LED_BLINK_GPIO_CLK	LED1_RCU_GPIOx
+
+/**
+ * LEDs bit-banging 595	--> Using SPI2 pin's: MOSI, SCK and NSS
+ */
+
+#define LED595_DATA_GPIO_PINx	GPIO_PIN_5
+#define LED595_DATA_RCU_GPIOx	RCU_GPIOB
+#define LED595_DATA_GPIOx		GPIOB
+
+#define LED595_CLK_GPIO_PINx	GPIO_PIN_3
+#define LED595_CLK_RCU_GPIOx	RCU_GPIOB
+#define LED595_CLK_GPIOx		GPIOB
+
+#define LED595_LOAD_GPIO_PINx	GPIO_PIN_15
+#define LED595_LOAD_RCU_GPIOx	RCU_GPIOA
+#define LED595_LOAD_GPIOx		GPIOA
 
 /**
  * KEYs
  */
 
-#define KEY1_PINx			GPIO_PIN_6
-#define KEY1_GPIOx			GPIOA
-#define KEY1_RCU_GPIOx		RCU_GPIOA
+#define KEY1_PINx						GPIO_PIN_6
+#define KEY1_GPIOx						GPIOA
+#define KEY1_RCU_GPIOx					RCU_GPIOA
 
-#define KEY2_PINx			GPIO_PIN_14
-#define KEY2_GPIOx			GPIOB
-#define KEY2_RCU_GPIOx		RCU_GPIOB
+#define KEY2_PINx						GPIO_PIN_14
+#define KEY2_GPIOx						GPIOB
+#define KEY2_RCU_GPIOx					RCU_GPIOB
 
-#define KEY3_PINx			GPIO_PIN_11
-#define KEY3_GPIOx			GPIOA
-#define KEY3_RCU_GPIOx		RCU_GPIOA
+#define KEY3_PINx						GPIO_PIN_11
+#define KEY3_GPIOx						GPIOA
+#define KEY3_RCU_GPIOx					RCU_GPIOA
 
 /**
  * I2C
  */
 
+// #define I2C0_REMAP
+#if defined (I2C0_REMAP)
+# define I2C_REMAP			GPIO_I2C0_REMAP
+#endif
 #define I2C_PERIPH			I2C0_PERIPH
 #define I2C_RCU_CLK			I2C0_RCU_CLK
 #define I2C_GPIO_SCL_PORT	I2C0_SCL_GPIOx
@@ -110,10 +130,11 @@
 
 // #define USART0_REMAP
 // #define USART1_REMAP
+// #define USART2_FULL_REMAP
 #define USART2_PARTIAL_REMAP
 // #define UART3_REMAP
 
-#include "mcu/gd32f103_mcu.h"
+#include "mcu/gd32f10x_mcu.h"
 #include "gd32_gpio.h"
 
 #define GD32_BOARD_NAME			"GD32F103R"

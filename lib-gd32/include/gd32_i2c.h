@@ -2,7 +2,7 @@
  * @file gd32_i2c.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,19 +41,11 @@ typedef enum GD32_I2C_RC {
 	GD32_I2C_NOK_TOUT = 4
 } gd32_i2c_rc_t;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern void gd32_i2c_begin(void);
-extern void gd32_i2c_end(void);
-extern uint8_t gd32_i2c_write(const char *, uint32_t);
-extern uint8_t gd32_i2c_read(char *, uint32_t);
-extern void gd32_i2c_set_baudrate(uint32_t);
-extern void gd32_i2c_set_address(uint8_t);
-
-#ifdef __cplusplus
-}
-#endif
+void gd32_i2c_begin(void);
+void gd32_i2c_end(void);
+extern uint8_t gd32_i2c_write(const char *pBuffer, uint32_t nLength);
+uint8_t gd32_i2c_read(char *pBuffer, uint32_t nLength);
+void gd32_i2c_set_baudrate(uint32_t nBaudrate);
+void gd32_i2c_set_address(uint8_t nAddress);
 
 #endif /* GD32_I2C_H_ */

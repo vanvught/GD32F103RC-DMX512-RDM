@@ -34,9 +34,12 @@
 #include "debug.h"
 
 namespace flashrom {
+/* Backwards compatibility with SPI FLASH */
 static constexpr auto FLASH_SECTOR_SIZE = 4096U;
 /* The flash page size is 2KB for bank0 */
-static constexpr auto FLASH_PAGE = (2 * 1024);
+static constexpr auto BANK0_FLASH_PAGE = (2U * 1024U);
+/* The flash page size is 4KB for bank1 */
+static constexpr auto BANK1_FLASH_PAGE = (4U * 1024U);
 
 enum class State {
 	IDLE,
@@ -52,9 +55,21 @@ static uint32_t s_nPage;
 static uint32_t s_nLength;;
 static uint32_t s_nAddress;
 static uint32_t *s_pData;
+static bool s_isBank0;
 }  // namespace flashrom
 
-using namespace flashrom;
+bool static is_bank0(const uint32_t page_address) {
+	/* flash size is greater than 512k */
+	if (FMC_BANK0_SIZE < FMC_SIZE) {
+		if (FMC_BANK0_END_ADDRESS > page_address) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	return true;
+}
 
 using namespace flashrom;
 
@@ -76,7 +91,7 @@ const char *FlashRom::GetName() {
 }
 
 uint32_t FlashRom::GetSize() {
-	return *(volatile uint16_t*)(0x1FFFF7E0) * 1024;
+	return FMC_SIZE * 1024U;
 }
 
 uint32_t FlashRom::GetSectorSize() {
@@ -111,21 +126,41 @@ bool FlashRom::Erase(uint32_t nOffset, uint32_t nLength, flashrom::result& nResu
 	case State::IDLE:
 		s_nPage = nOffset + FLASH_BASE;
 		s_nLength = nLength;
-		fmc_bank0_unlock();
+		if ((s_isBank0 = is_bank0(s_nPage))) {
+			fmc_bank0_unlock();
+		} else {
+			fmc_bank1_unlock();
+		}
 		s_State = State::ERASE_BUSY;
+		DEBUG_PRINTF("isBank0=%d", static_cast<int>(s_isBank0));
 		DEBUG_EXIT
 		return false;
 		break;
 	case State::ERASE_BUSY:
-		if (FMC_BUSY == fmc_bank0_state_get()) {
-			DEBUG_EXIT
-			return false;
+		if (s_isBank0) {
+			if (FMC_BUSY == fmc_bank0_state_get()) {
+				DEBUG_EXIT
+				return false;
+			}
+		} else {
+			if (FMC_BUSY == fmc_bank1_state_get()) {
+				DEBUG_EXIT
+				return false;
+			}
 		}
 
-		FMC_CTL0 &= ~FMC_CTL0_PER;
+		if (s_isBank0) {
+			FMC_CTL0 &= ~FMC_CTL0_PER;
+		} else {
+			FMC_CTL1 &= ~FMC_CTL1_PER;
+		}
 
 		if (s_nLength == 0) {
-			fmc_bank0_lock();
+			if (s_isBank0) {
+				fmc_bank0_lock();
+			} else {
+				fmc_bank1_lock();
+			}
 			s_State = State::IDLE;
 			DEBUG_EXIT
 			return true;
@@ -139,19 +174,36 @@ bool FlashRom::Erase(uint32_t nOffset, uint32_t nLength, flashrom::result& nResu
 		if (s_nLength > 0) {
 			DEBUG_PRINTF("s_nPage=%p", s_nPage);
 
-			FMC_CTL0 |= FMC_CTL0_PER;
-			FMC_ADDR0 = s_nPage;
-			FMC_CTL0 |= FMC_CTL0_START;
+			if (s_isBank0) {
+				FMC_CTL0 |= FMC_CTL0_PER;
+				FMC_ADDR0 = s_nPage;
+				FMC_CTL0 |= FMC_CTL0_START;
 
-			s_nLength -= FLASH_PAGE;
-			s_nPage += FLASH_PAGE;
+				s_nLength -= BANK0_FLASH_PAGE;
+				s_nPage += BANK0_FLASH_PAGE;
+			} else {
+				FMC_CTL1 |= FMC_CTL1_PER;
+				FMC_ADDR1 = s_nPage;
+				if (FMC_OBSTAT & FMC_OBSTAT_SPC) {
+					FMC_ADDR0 = s_nPage;
+				}
+				FMC_CTL1 |= FMC_CTL1_START;
+
+				s_nLength -= BANK1_FLASH_PAGE;
+				s_nPage += BANK1_FLASH_PAGE;
+			}
 		}
+
 		s_State = State::ERASE_BUSY;
 		DEBUG_EXIT
 		return false;
 		break;
 	case State::WRITE_BUSY:
-		FMC_CTL0 &= ~FMC_CTL0_PG;
+		if (s_isBank0) {
+			FMC_CTL0 &= ~FMC_CTL0_PG;
+		} else {
+			FMC_CTL1 &= ~FMC_CTL1_PG;
+		}
 		/* no break */
 	case State::WRITE_PROGRAM:
 		s_State = State::IDLE;
@@ -160,10 +212,12 @@ bool FlashRom::Erase(uint32_t nOffset, uint32_t nLength, flashrom::result& nResu
 		break;
 	default:
 		assert(0);
+		__builtin_unreachable();
 		break;
 	}
 
 	assert(0);
+	__builtin_unreachable();
 	return true;
 }
 
@@ -171,62 +225,96 @@ bool FlashRom::Write(uint32_t nOffset, uint32_t nLength, const uint8_t *pBuffer,
 	nResult = result::OK;
 
 	switch (s_State) {
-		case State::IDLE:
-			DEBUG_PRINTF("State=%d", static_cast<int>(s_State));
-			s_nAddress = nOffset + FLASH_BASE;
-			s_pData = const_cast<uint32_t *>(reinterpret_cast<const uint32_t *>(pBuffer));
-			s_nLength = nLength;
+	case State::IDLE:
+		DEBUG_PUTS("State::IDLE");
+		s_nAddress = nOffset + FLASH_BASE;
+		s_pData = const_cast<uint32_t *>(reinterpret_cast<const uint32_t *>(pBuffer));
+		s_nLength = nLength;
+		if ((s_isBank0 = is_bank0(s_nAddress))) {
 			fmc_bank0_unlock();
-			s_State = State::WRITE_BUSY;
-			DEBUG_EXIT
-			return false;
-			break;
-		case State::WRITE_BUSY:
+		} else {
+			fmc_bank1_unlock();
+		}
+		s_State = State::WRITE_BUSY;
+		DEBUG_PRINTF("isBank0=%d", static_cast<int>(s_isBank0));
+		DEBUG_EXIT
+		return false;
+		break;
+	case State::WRITE_BUSY:
+		if (s_isBank0) {
 			if (FMC_BUSY == fmc_bank0_state_get()) {
 				DEBUG_EXIT
 				return false;
 			}
-
-			FMC_CTL0 &= ~FMC_CTL0_PG;
-
-			if (s_nLength == 0) {
-				fmc_bank0_lock();
-				s_State = State::IDLE;
+		} else {
+			if (FMC_BUSY == fmc_bank1_state_get()) {
 				DEBUG_EXIT
-				return true;
+				return false;
 			}
+		}
 
-			s_State = State::WRITE_PROGRAM;
-			return false;
-			break;
-		case State::WRITE_PROGRAM:
-			if (s_nLength >= 4) {
-	            FMC_CTL0 |= FMC_CTL0_PG;
-	            REG32(s_nAddress) = *s_pData;
+		if (s_isBank0) {
+			FMC_CTL0 &= ~FMC_CTL0_PG;
+		} else {
+			FMC_CTL1 &= ~FMC_CTL1_PG;
+		}
 
-	            s_pData++;
-	        	s_nAddress += 4;
-	        	s_nLength -= 4;
-			} else if (s_nLength > 0) {
-	            FMC_CTL0 |= FMC_CTL0_PG;
-	            REG32(s_nAddress) = *s_pData;
+		if (s_nLength == 0) {
+			if (s_isBank0) {
+				fmc_bank0_lock();
+			} else {
+				fmc_bank1_lock();
 			}
-			s_State = State::WRITE_BUSY;
-			return false;
-			break;
-		case State::ERASE_BUSY:
-			FMC_CTL0 &= ~FMC_CTL0_PER;
-			/* no break */
-		case State::ERASE_PROGAM:
 			s_State = State::IDLE;
 			DEBUG_EXIT
-			return false;
-			break;
-		default:
-			assert(0);
-			break;
+			return true;
+		}
+
+		s_State = State::WRITE_PROGRAM;
+		return false;
+		break;
+	case State::WRITE_PROGRAM:
+		if (s_nLength >= 4) {
+			if (s_isBank0) {
+				FMC_CTL0 |= FMC_CTL0_PG;
+			} else {
+				FMC_CTL1 |= FMC_CTL1_PG;
+			}
+			REG32(s_nAddress) = *s_pData;
+
+			s_pData++;
+			s_nAddress += 4;
+			s_nLength -= 4;
+		} else if (s_nLength > 0) {
+			if (s_isBank0) {
+				FMC_CTL0 |= FMC_CTL0_PG;
+			} else {
+				FMC_CTL1 |= FMC_CTL1_PG;
+			}
+			REG32(s_nAddress) = *s_pData;
+		}
+		s_State = State::WRITE_BUSY;
+		return false;
+		break;
+	case State::ERASE_BUSY:
+		if (s_isBank0) {
+			FMC_CTL0 &= ~FMC_CTL0_PER;
+		} else {
+			FMC_CTL1 &= ~FMC_CTL1_PER;
+		}
+		/* no break */
+	case State::ERASE_PROGAM:
+		s_State = State::IDLE;
+		DEBUG_EXIT
+		return false;
+		break;
+	default:
+		assert(0);
+		__builtin_unreachable();
+		break;
 	}
 
 	assert(0);
+	__builtin_unreachable();
 	return true;
 }

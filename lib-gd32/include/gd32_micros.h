@@ -2,7 +2,7 @@
  * @file gd32_micros.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,6 @@
 #ifndef GD32_MICROS_H_
 #define GD32_MICROS_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "gd32.h"
 
 static inline uint32_t micros(void) {
@@ -41,8 +37,4 @@ static inline uint32_t micros(void) {
 	return (msw << 16) | lsw;
 }
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* INCLUDE_GD32_MICROS_H_ */
+#endif /* GD32_MICROS_H_ */

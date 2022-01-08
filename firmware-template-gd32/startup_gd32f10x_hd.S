@@ -5,22 +5,20 @@
   
 .global  Default_Handler
 
-/* necessary symbols defined in linker script to initialize data */
 .word  _sidata
 .word  _sdata
 .word  _edata
 .word  _sbss
 .word  _ebss
 
-  .section  .text.Reset_Handler
+.section  .text.Reset_Handler
   .weak  Reset_Handler
   .type  Reset_Handler, %function
 
-/* reset Handler */
 Reset_Handler:
   ldr   r0, =_sp
   mov   sp, r0
-/* copy the data segment into ram */  
+
   movs r1, #0
   b DataInit
 
@@ -38,7 +36,6 @@ DataInit:
   bcc CopyData
   ldr r2, =_sbss
   b Zerobss
-
 FillZerobss:
   movs r3, #0
   str r3, [r2], #4
@@ -47,23 +44,19 @@ Zerobss:
   ldr r3, = _ebss
   cmp r2, r3
   bcc FillZerobss
-/* Call SystemInit function */
   bl  SystemInit
-/* Call static constructors */
-/*  bl __libc_init_array */
-/*Call the main function */
   bl main
   bx lr
 .size Reset_Handler, .-Reset_Handler
 
-   .section .text.Default_Handler,"ax",%progbits
+.section .text.Default_Handler,"ax",%progbits
 Default_Handler:
 Infinite_Loop:
   b Infinite_Loop
   .size Default_Handler, .-Default_Handler
 
-   .section  .vectors,"a",%progbits
-   .global __gVectors
+.section  .vectors,"a",%progbits
+.global __gVectors
 
 __gVectors:
                     .word _sp                                  /* Top of Stack */
@@ -257,7 +250,7 @@ __gVectors:
 
   .weak TIMER0_Channel_IRQHandler
   .thumb_set TIMER0_Channel_IRQHandler,Default_Handler
-  
+
   .weak TIMER1_IRQHandler
   .thumb_set TIMER1_IRQHandler,Default_Handler
   
@@ -266,7 +259,7 @@ __gVectors:
 
   .weak TIMER3_IRQHandler
   .thumb_set TIMER3_IRQHandler,Default_Handler
-  
+
   .weak I2C0_EV_IRQHandler
   .thumb_set I2C0_EV_IRQHandler,Default_Handler
 
@@ -326,13 +319,13 @@ __gVectors:
 
   .weak TIMER4_IRQHandler
   .thumb_set TIMER4_IRQHandler,Default_Handler
-  
+
   .weak SPI2_IRQHandler
   .thumb_set SPI2_IRQHandler,Default_Handler
 
   .weak UART3_IRQHandler
   .thumb_set UART3_IRQHandler,Default_Handler
-  
+
   .weak UART4_IRQHandler
   .thumb_set UART4_IRQHandler,Default_Handler
 

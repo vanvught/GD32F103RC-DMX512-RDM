@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_WS28XXDMXSTARTSTOP_H_
-#define H3_WS28XXDMXSTARTSTOP_H_
+#ifndef WS28XXDMXSTARTSTOP_H_
+#define WS28XXDMXSTARTSTOP_H_
 
 #include "pixeldmxhandler.h"
 
@@ -42,7 +42,8 @@ public:
 		gd32_gpio_clr(GD32_BOARD_LED2);
 	}
 
-	~PixelDmxStartStop() override {}
+	~PixelDmxStartStop() override {
+	}
 
 	void Start() override {
 		gd32_gpio_set(GPIO_START_STOP);
@@ -55,4 +56,4 @@ public:
 	}
 };
 
-#endif /* H3_WS28XXDMXSTARTSTOP_H_ */
+#endif /* WS28XXDMXSTARTSTOP_H_ */

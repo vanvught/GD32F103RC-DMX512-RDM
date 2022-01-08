@@ -38,6 +38,10 @@
 
 using namespace pixel;
 
+#if defined ( GD32 )
+static uint32_t s_tmp;
+#endif
+
 WS28xx *WS28xx::s_pThis;
 
 WS28xx::WS28xx(PixelConfiguration& pixelConfiguration) {
@@ -143,24 +147,16 @@ void WS28xx::SetupBuffers() {
 	}
 
 #if defined ( GD32 )
-	auto tmp = m_nBufSize;
+	s_tmp = m_nBufSize;
 	m_nBufSize = (m_nBufSize + 3) & static_cast<uint32_t>(~3);
 
-	for (auto i = tmp; i < m_nBufSize; i++) {
+	for (auto i = s_tmp; i < m_nBufSize; i++) {
 		m_pBuffer[i] = 0x00;
 	}
 
-	DEBUG_PRINTF("m_nBufSize=%u -> %d", m_nBufSize, m_nBufSize - tmp);
-#endif
-
+	DEBUG_PRINTF("m_nBufSize=%u -> %d", m_nBufSize, m_nBufSize - s_tmp);
+#else
 	memcpy(m_pBlackoutBuffer, m_pBuffer, m_nBufSize);
-
-#if defined ( GD32 )
-	uint16_t *p = (uint16_t *)m_pBlackoutBuffer;
-
-	for (uint32_t i = 0; i < m_nBufSize; i++) {
-		p[i] = __builtin_bswap16(p[i]);
-	}
 #endif
 
 	DEBUG_EXIT
@@ -172,17 +168,19 @@ void WS28xx::Update() {
 	assert(!IsUpdating());
 
 #if defined ( GD32 )
-	uint8_t *tx = (uint8_t *)m_pBuffer;
-	tx[0] = 0;
+	for (auto i = s_tmp; i < m_nBufSize; i++) {
+		m_pBuffer[i] = 0x00;
+	}
 
-	uint16_t *p = (uint16_t *)m_pBuffer;
+	const uint16_t *src = (uint16_t *)m_pBuffer;
+	uint16_t *dst = (uint16_t *)m_pBlackoutBuffer;
 
-	for (uint32_t i = 0; i < m_nBufSize; i++) {
-		p[i] = __builtin_bswap16(p[i]);
+	for (uint32_t i = 0; i < m_nBufSize / 2; i++) {
+		dst[i] = __builtin_bswap16(src[i]);
 	}
 #endif
 
-	FUNC_PREFIX(spi_dma_tx_start(m_pBuffer, m_nBufSize));
+	FUNC_PREFIX(spi_dma_tx_start(m_pBlackoutBuffer, m_nBufSize));
 #else
 	FUNC_PREFIX(spi_writenb(reinterpret_cast<char *>(m_pBuffer), m_nBufSize));
 #endif
@@ -190,13 +188,33 @@ void WS28xx::Update() {
 
 void WS28xx::Blackout() {
 	DEBUG_ENTRY
-
 	assert (m_pBlackoutBuffer != nullptr);
+
 #if defined( USE_SPI_DMA )
 	assert(!IsUpdating());
 
-	FUNC_PREFIX(spi_dma_tx_start(m_pBlackoutBuffer, m_nBufSize));
+# if defined ( GD32 )
+	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822) || (m_Type == Type::P9813)) {
+		memset(m_pBuffer, 0, 4);
 
+		for (uint32_t i = 0; i < m_nCount; i++) {
+			SetPixel(i, 0, 0, 0);
+		}
+
+		if ((m_Type == Type::APA102) || (m_Type == Type::SK9822)) {
+			memset(&m_pBuffer[m_nBufSize - 4], 0xFF, 4);
+		} else {
+			memset(&m_pBuffer[m_nBufSize - 4], 0, 4);
+		}
+	} else {
+		m_pBuffer[0] = 0x00;
+		memset(&m_pBuffer[1], m_Type == Type::WS2801 ? 0 : m_nLowCode, m_nBufSize);
+	}
+
+	Update();
+# else
+	FUNC_PREFIX(spi_dma_tx_start(m_pBlackoutBuffer, m_nBufSize));
+# endif
 	// A blackout may not be interrupted.
 	do {
 		asm volatile ("isb" ::: "memory");

@@ -2,7 +2,7 @@
  * @file gd32_board.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,20 @@
 #ifndef GD32_BOARD_H_
 #define GD32_BOARD_H_
 
-#if defined (BOARD_GD32F207C_EVAL)
-# include "board/gd32f207c_eval.h"
-#elif defined (BOARD_GD32F207R_ETH)
-# include "board/gd32f207r_eth.h"
-#elif defined (BOARD_GD32F103R)
+#if defined (BOARD_GD32F103R)
 # include "board/gd32f103r.h"
+#elif defined (BOARD_GD32F107R)
+# include "board/gd32f107r.h"
+#elif defined (BOARD_GD32F207R)
+# include "board/gd32f207r.h"
+#elif defined (BOARD_GD32F207C_EVAL)
+# include "board/gd32f207c_eval.h"
 #else
 # error Board is unknown / not defined
+#endif
+
+#if defined(USART0_REMAP) && !defined (I2C0_REMAP)
+# error Configuration error
 #endif
 
 #endif /* GD32_BOARD_H_ */

@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#ifndef NDEBUG
+#define NDEBUG	//FIXME Remove
+#endif
+
 #include <cassert>
 #include <cstring>
 #include <time.h>
@@ -99,7 +103,7 @@ bool HwClock::RtcSet(const struct rtc_time *pRtcTime) {
 	assert(pRtcTime != nullptr);
 
 	rtc_counter_set(mktime(const_cast<struct tm *>(reinterpret_cast<const struct tm *>(pRtcTime))));
-	rtc_lwoff_wait();
+//	rtc_lwoff_wait();
 
 	DEBUG_EXIT
 	return true;

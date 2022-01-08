@@ -29,12 +29,20 @@
 
 #include "debug.h"
 
+#if(PHY_TYPE == RTL8201F)
+# define ENET_MEDIAMODE		ENET_100M_FULLDUPLEX
+#else
+# define ENET_MEDIAMODE		ENET_AUTO_NEGOTIATION
+#endif
+
 extern enet_descriptors_struct  txdesc_tab[ENET_TXBUF_NUM];
 extern enet_descriptors_struct  *dma_current_rxdesc;
 
 static __IO uint32_t enet_init_status = 0;
 
 static void enet_gpio_config(void) {
+	DEBUG_ENTRY
+
 	rcu_periph_clock_enable(RCU_GPIOA);
 	rcu_periph_clock_enable(RCU_GPIOB);
 	rcu_periph_clock_enable(RCU_GPIOC);
@@ -48,7 +56,11 @@ static void enet_gpio_config(void) {
     rcu_osci_on(RCU_PLL2_CK);
     rcu_osci_stab_wait(RCU_PLL2_CK);
     /* get 50MHz from CK_PLL2 on CKOUT0 pin (PA8) to clock the PHY */
+#if defined (GD32F10X_CL)
+    rcu_ckout0_config(RCU_CKOUT0SRC_CKPLL2);
+#else
     rcu_ckout0_config(RCU_CKOUT0SRC_CKPLL2,RCU_CKOUT0_DIV1);
+#endif
     gpio_ethernet_phy_select(GPIO_ENET_PHY_RMII);
 
 
@@ -72,9 +84,13 @@ static void enet_gpio_config(void) {
     gpio_init(GPIOB, GPIO_MODE_AF_PP, GPIO_OSPEED_50MHZ, GPIO_PIN_12);
     /* PB13: ETH_RMII_TXD1 */
     gpio_init(GPIOB, GPIO_MODE_AF_PP, GPIO_OSPEED_50MHZ, GPIO_PIN_13);
+
+    DEBUG_EXIT
 }
 
 static void enet_mac_dma_config(void) {
+	DEBUG_ENTRY
+
 	ErrStatus reval_state = ERROR;
 
 	rcu_periph_clock_enable(RCU_ENET);
@@ -90,12 +106,10 @@ static void enet_mac_dma_config(void) {
 		}
 	}
 
-    enet_init_status = enet_init(ENET_AUTO_NEGOTIATION, ENET_AUTOCHECKSUM_DROP_FAILFRAMES, ENET_RECEIVEALL);
+    enet_init_status = enet_init(ENET_MEDIAMODE, ENET_AUTOCHECKSUM_DROP_FAILFRAMES, ENET_RECEIVEALL);
 }
 
 static void enet_system_setup(void) {
-	DEBUG_ENTRY
-
 	enet_gpio_config();
 
 	enet_mac_dma_config();
@@ -104,12 +118,20 @@ static void enet_system_setup(void) {
 		while (1) {
 		}
 	}
-
-	DEBUG_EXIT
 }
 
 int emac_start(uint8_t mac_address[]) {
 	DEBUG_ENTRY
+#if(PHY_TYPE == LAN8700)
+	DEBUG_PUTS("LAN8700");
+#elif(PHY_TYPE == DP83848)
+	DEBUG_PUTS("DP83848");
+#elif(PHY_TYPE == RTL8201F)
+	DEBUG_PUTS("RTL8201F");
+#else
+#error PHY_TYPE is not set
+#endif
+	DEBUG_PRINTF("ENET_RXBUF_NUM=%u, ENET_TXBUF_NUM=%u", ENET_RXBUF_NUM, ENET_TXBUF_NUM);
 
 	enet_system_setup();
 
