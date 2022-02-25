@@ -1,8 +1,8 @@
 /**
- * @file console_uart0.h
+ * @file bitbanging595.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef CONSOLE_UART0_H_
-#define CONSOLE_UART0_H_
+#include "gd32/bitbanging595.h"
 
-#if !defined (CONSOLE_H_)
-# error Should not be included directly
-#endif
-
-#include <stdint.h>
-
-// ANSI colors
-typedef enum {
-	CONSOLE_BLACK = 0,
-	CONSOLE_RED = 1,
-	CONSOLE_GREEN = 2,
-	CONSOLE_YELLOW = 3,
-	CONSOLE_BLUE = 4,
-	CONSOLE_MAGENTA = 5
-,	CONSOLE_CYAN = 6,
-	CONSOLE_WHITE = 7,
-	CONSOLE_DEFAULT = 9
-} _console_colors;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern void console_set_fg_color(uint16_t);
-extern void console_set_bg_color(uint16_t);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* CONSOLE_UART0_H_ */
+BitBanging595 *BitBanging595::s_pThis;
+uint32_t BitBanging595::s_nData;
+uint32_t BitBanging595::s_nDataPrevious;

@@ -137,6 +137,8 @@
 #include "mcu/gd32f10x_mcu.h"
 #include "gd32_gpio.h"
 
+#define GD32_MCU_NAME			"GD32F103R"
+
 #define GD32_BOARD_NAME			"GD32F103R"
 #define GD32_BOARD_LED1			GD32_PORT_TO_GPIO(GD32_GPIO_PORTC, 0)
 #define GD32_BOARD_LED2			GD32_PORT_TO_GPIO(GD32_GPIO_PORTC, 2)

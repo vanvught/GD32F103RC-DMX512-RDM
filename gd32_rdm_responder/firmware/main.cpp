@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,6 @@
 
 #include "rdmresponder.h"
 #include "rdmpersonality.h"
-
 #include "rdmdeviceparams.h"
 #include "rdmsensorsparams.h"
 #include "rdmsubdevicesparams.h"
@@ -149,7 +148,6 @@ void main(void) {
 			pixelDmxConfiguration.GetCount(),
 			pixelDmxConfiguration.GetGroupingCount(),
 			PixelType::GetMap(pixelDmxConfiguration.GetMap()));
-
 
 	RDMPersonality *personalities[2] = { new RDMPersonality(aDescription, &pixelDmx), new RDMPersonality("Config mode", &pixelDmxParamsRdm) };
 

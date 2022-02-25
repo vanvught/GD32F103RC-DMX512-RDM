@@ -2,7 +2,7 @@
  * @file pixeldmxstartstop.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef WS28XXDMXSTARTSTOP_H_
-#define WS28XXDMXSTARTSTOP_H_
+#ifndef PIXELDMXSTARTSTOP_H_
+#define PIXELDMXSTARTSTOP_H_
 
 #include "pixeldmxhandler.h"
 
 #include "gd32.h"
 #include "gd32_gpio.h"
 
-#define GPIO_START_STOP		GPIO_EXT_12
-
 class PixelDmxStartStop final: public PixelDmxHandler {
 public:
 	PixelDmxStartStop() {
-		gd32_gpio_fsel(GPIO_START_STOP, GPIO_FSEL_OUTPUT);
-		gd32_gpio_clr(GPIO_START_STOP);
 		gd32_gpio_fsel(GD32_BOARD_LED2, GPIO_FSEL_OUTPUT);
 		gd32_gpio_clr(GD32_BOARD_LED2);
 	}
@@ -46,14 +42,12 @@ public:
 	}
 
 	void Start() override {
-		gd32_gpio_set(GPIO_START_STOP);
 		gd32_gpio_set(GD32_BOARD_LED2);
 	}
 
 	void Stop() override {
-		gd32_gpio_clr(GPIO_START_STOP);
 		gd32_gpio_clr(GD32_BOARD_LED2);
 	}
 };
 
-#endif /* WS28XXDMXSTARTSTOP_H_ */
+#endif /* PIXELDMXSTARTSTOP_H_ */

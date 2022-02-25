@@ -58,7 +58,6 @@ lib-network/src/emac/*
 lib-network/src/net/*
 
 *.bin
-
-
-
+do-tftp.sh
+udp_send
 
