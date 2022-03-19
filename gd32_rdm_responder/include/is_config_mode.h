@@ -31,7 +31,7 @@
 bool is_config_mode() {
     rcu_periph_clock_enable(KEY1_RCU_GPIOx);
     gpio_init(KEY1_GPIOx, GPIO_MODE_IPU, GPIO_OSPEED_50MHZ, KEY1_PINx);
-    const auto isConfigMode = !gpio_input_bit_get(KEY1_GPIOx, KEY1_PINx);
+    const auto isConfigMode = (gpio_input_bit_get(KEY1_GPIOx, KEY1_PINx) == RESET);
 
     DEBUG_PRINTF("isConfigMode=%s", isConfigMode ? "Yes" : "No");
 

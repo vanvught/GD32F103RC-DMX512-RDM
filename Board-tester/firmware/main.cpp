@@ -24,17 +24,13 @@
  */
 
 #include <cstdint>
+#include <stdio.h>
 #include <time.h>
 
 #include "hardware.h"
 #include "display.h"
 
-extern "C" {
-#include "gd32f10x.h"
-
-void uart0_puts(const char *);
-void uart0_putc(int);
-}
+#include "gd32.h"
 
 // Skip not used PINs and skip USART0
 static constexpr auto GPIOA_PINS = ~(GPIO_PIN_0 | GPIO_PIN_3 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10);
@@ -47,33 +43,33 @@ int main(void) {
 	Display display;
 
 	display.Cls();
-	display.PutString("GD32F103RC");
+	display.PutString(GD32_BOARD_NAME);
 
-	uart0_puts("Board tester\nAll GPIO's are set to output HIGH");
+	puts("Board tester\nAll GPIO's are set to output HIGH");
 
-	uart0_puts("rcu_periph_clock_enable\n");
+	puts("rcu_periph_clock_enable\n");
 	rcu_periph_clock_enable(RCU_GPIOA);
 	rcu_periph_clock_enable(RCU_GPIOB);
 	rcu_periph_clock_enable(RCU_GPIOC);
 	rcu_periph_clock_enable(RCU_GPIOD);
 	rcu_periph_clock_enable(RCU_AF);
 
-	uart0_puts("gpio_init\n");
+	puts("gpio_init\n");
 	gpio_init(GPIOA, GPIO_MODE_OUT_PP, GPIO_OSPEED_50MHZ, GPIOA_PINS);
 	gpio_init(GPIOB, GPIO_MODE_OUT_PP, GPIO_OSPEED_50MHZ, GPIOB_PINS);
 	gpio_init(GPIOC, GPIO_MODE_OUT_PP, GPIO_OSPEED_50MHZ, GPIOC_PINS);
 	gpio_init(GPIOD, GPIO_MODE_OUT_PP, GPIO_OSPEED_50MHZ, GPIOD_PINS);
 
-	uart0_puts("gpio_pin_remap_config\n");
+	puts("gpio_pin_remap_config\n");
 	gpio_pin_remap_config(GPIO_SWJ_DISABLE_REMAP, ENABLE);
 
-	uart0_puts("GPIO_BOP\n");
+	puts("GPIO_BOP\n");
 	GPIO_BOP(GPIOA) = GPIOA_PINS;
 	GPIO_BOP(GPIOB) = GPIOB_PINS;
 	GPIO_BOP(GPIOC) = GPIOC_PINS;
 	GPIO_BOP(GPIOD) = GPIOD_PINS;
 
-	uart0_puts("Running!\n");
+	puts("Running!\n");
 
 	auto t0 = time(nullptr);
 	uint32_t toggle = 0;
@@ -86,13 +82,13 @@ int main(void) {
 			toggle ^= 0x1;
 
 			if (toggle != 0) {
-				uart0_puts("GPIO_BOP\n");
+				puts("GPIO_BOP\n");
 				GPIO_BOP(GPIOA) = GPIOA_PINS;
 				GPIO_BOP(GPIOB) = GPIOB_PINS;
 				GPIO_BOP(GPIOC) = GPIOC_PINS;
 				GPIO_BOP(GPIOD) = GPIOD_PINS;
 			} else {
-				uart0_puts("GPIO_BC\n");
+				puts("GPIO_BC\n");
 				GPIO_BC(GPIOA) = GPIOA_PINS;
 				GPIO_BC(GPIOB) = GPIOB_PINS;
 				GPIO_BC(GPIOC) = GPIOC_PINS;
@@ -101,4 +97,3 @@ int main(void) {
 		}
 	}
 }
-

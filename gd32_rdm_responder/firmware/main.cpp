@@ -31,6 +31,7 @@
 #include "ledblink.h"
 
 #include "displayudf.h"
+#include "display_timeout.h"
 
 #include "rdmresponder.h"
 #include "rdmpersonality.h"
@@ -122,7 +123,7 @@ void main(void) {
 	pixelDmx.SetPixelDmxHandler(&pixelDmxStartStop);
 
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern());
-	PixelTestPattern pixelTestPattern(nTestPattern);
+	PixelTestPattern pixelTestPattern(nTestPattern, 1);
 
 	PixelDmxParamsRdm pixelDmxParamsRdm(&storeWS28xxDmx);
 

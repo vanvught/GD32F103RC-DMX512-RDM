@@ -1,8 +1,8 @@
 /**
- * @file mac_address.c
+ * @file display_timeout.h
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,28 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#ifndef NDEBUG
-# include <stdio.h>
-#endif
+#ifndef DISPLAY_TIMEOUT_H_
+#define DISPLAY_TIMEOUT_H_
 
 #include "gd32.h"
 
-void mac_address_get(uint8_t paddr[]) {
+namespace display {
+namespace timeout {
+
+void gpio_init() {
+    rcu_periph_clock_enable(KEY2_RCU_GPIOx);
 #if !defined (GD32F4XX)
-	const uint32_t mac_hi = *(volatile uint32_t *) (0x1FFFF7E8);
-	const uint32_t mac_lo = *(volatile uint32_t *) (0x1FFFF7EC);
+    ::gpio_init(KEY2_GPIOx, GPIO_MODE_IPU, GPIO_OSPEED_50MHZ, KEY2_PINx);
 #else
-	const uint32_t mac_hi = *(volatile uint32_t *) (0x1FFF7A10);
-	const uint32_t mac_lo = *(volatile uint32_t *) (0x1FFF7A14);
-#endif
-
-	paddr[0] = 2;
-	paddr[1] = (mac_lo >> 0) & 0xff;
-	paddr[2] = (mac_hi >> 24) & 0xff;
-	paddr[3] = (mac_hi >> 16) & 0xff;
-	paddr[4] = (mac_hi >> 8) & 0xff;
-	paddr[5] = (mac_hi >> 0) & 0xff;
-
-#ifndef NDEBUG
-	printf("%02x:%02x:%02x:%02x:%02x:%02x\n", paddr[0], paddr[1], paddr[2], paddr[3], paddr[4], paddr[5]);
+    gpio_mode_set(KEY2_GPIOx, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, KEY2_PINx);
 #endif
 }
+
+bool gpio_renew() {
+	return (GPIO_ISTAT(KEY2_GPIOx) & KEY2_PINx) == 0;
+}
+
+}  // namespace timeout
+}  // namespace display
+
+#endif /* DISPLAY_TIMEOUT_H_ */
