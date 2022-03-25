@@ -20,7 +20,7 @@ Open source GD32F103RC RDM Controller with USB, DMX512 isolated board and compat
 A DMX512 RDM isolated with USB (FT245RL) extenstion board can be ordered here [https://www.bitwizard.nl/shop/raspberry-pi?product_id=154](https://www.bitwizard.nl/shop/raspberry-pi?product_id=154) -> Option: Model Orange Pi for use with the development board.
 
 ### RDM Responder Pixel Controller
-[Supported PIDs](RDM.md)
+[Supported PIDs](https://www.gd32-dmx.org/rdm.html)
 
 Personalities :
 
