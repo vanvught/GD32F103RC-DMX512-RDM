@@ -5,14 +5,14 @@
 ![GitHub Sponsors](https://img.shields.io/github/sponsors/vanvught)
 ![Main](https://github.com/vanvught/GD32F103RC-DMX512-RDM/actions/workflows/c-cpp.yml/badge.svg?branch=main)
 
+[PayPal.Me Donate](https://paypal.me/AvanVught?locale.x=nl_NL)
+
 # GD32F103RC-DMX512-RDM
 The master source code is available here -> [https://github.com/vanvught/rpidmx512](https://github.com/vanvught/rpidmx512)
 
 A development board is available here -> [https://github.com/vanvught/GD32FxxxR-dev-board](https://github.com/vanvught/GD32FxxxR-dev-board)
 
 Full documentation will be available here -> [https://www.gd32-dmx.org](https://www.gd32-dmx.org)
-
-[PayPal.Me Donate](https://paypal.me/AvanVught?locale.x=nl_NL)
 
 ### DMX USB Pro
 Open source GD32F103RC RDM Controller with USB, DMX512 isolated board and compatible with software that supports Enttec USB Pro.
@@ -50,4 +50,4 @@ Slot description in `Config mode`:
 
 The configuration is stored in the flash ROM when the `Slot Number 5` value changes from 0 into 255.
 
-The `Config mode` is also activated when GPIOB Pin 14 (GPIO Header pin 15) is connected to GND on reset.
+The `Config mode` is also activated when `KEY1_PINx` is connected to GND on reset. Which is defined in file `lib-gd32/include/board/gd32f103r.h`. 

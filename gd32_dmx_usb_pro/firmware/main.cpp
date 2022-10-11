@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,7 @@
 static constexpr char widget_mode_names[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM" , "RDM_SNIFFER" };
 static constexpr TRDMDeviceInfoData deviceLabel ALIGNED = { const_cast<char*>("GD32F103RC DMX USB Pro"), 22 };
 
-void main(void) {
+void main() {
 	Hardware hw;
 	Network nw;
 	LedBlink lb;
@@ -66,8 +66,8 @@ void main(void) {
 	WidgetParams widgetParams(&storeWidget);
 
 	if (widgetParams.Load()) {
-		widgetParams.Set();
 		widgetParams.Dump();
+		widgetParams.Set();
 	}
 
 	StoreRDMDevice storeRDMDevice;
@@ -76,8 +76,8 @@ void main(void) {
 	widget.SetLabel(&deviceLabel);
 
 	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set(&widget);
 		rdmDeviceParams.Dump();
+		rdmDeviceParams.Set(&widget);
 	}
 
 	widget.Init();
@@ -103,8 +103,7 @@ void main(void) {
 	for (;;) {
 		hw.WatchdogFeed();
 		widget.Run();
-		lb.Run();
 		spiFlashStore.Flash();
+		lb.Run();
 	}
 }
-

@@ -7,7 +7,7 @@ LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
 FAMILY?=gd32f10x
-BOARD?=BOARD_GD32F103R
+BOARD?=BOARD_GD32F103RC
 
 FAMILY:=$(shell echo $(FAMILY) | tr A-Z a-z)
 FAMILY_UC=$(shell echo $(FAMILY) | tr a-w A-W)
@@ -23,7 +23,7 @@ DEFINES:=$(addprefix -D,$(DEFINES))
 DEFINES+=-D_TIME_STAMP_YEAR_=$(shell date  +"%Y") -D_TIME_STAMP_MONTH_=$(shell date  +"%-m") -D_TIME_STAMP_DAY_=$(shell date  +"%-d")
 
 COPS=-DBARE_METAL -DGD32 -DGD32F10X_HD -D$(BOARD)
-COPS+=-DDISABLE_PRINTF_FLOAT
+#COPS+=-DDISABLE_PRINTF_FLOAT
 COPS+=$(DEFINES) $(MAKE_FLAGS) $(INCLUDES)
 COPS+=-Os -mcpu=cortex-m3 -mthumb
 COPS+=-nostartfiles -ffreestanding -nostdlib
