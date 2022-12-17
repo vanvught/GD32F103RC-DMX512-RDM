@@ -36,8 +36,7 @@
 #include "widgetstore.h"
 #include "rdmdeviceparams.h"
 
-#include "flashrom.h"
-#include "spiflashstore.h"
+#include "configstore.h"
 
 #include "storewidget.h"
 #include "storerdmdevice.h"
@@ -56,8 +55,8 @@ void main() {
 	Network nw;
 	LedBlink lb;
 	Display display; // Not supported, yet.
-	FlashRom flashRom;
-	SpiFlashStore spiFlashStore;
+
+	ConfigStore configStore;
 
 	Widget widget;
 	widget.SetPortDirection(0, dmx::PortDirection::INP, false);
@@ -103,7 +102,7 @@ void main() {
 	for (;;) {
 		hw.WatchdogFeed();
 		widget.Run();
-		spiFlashStore.Flash();
+		configStore.Flash();
 		lb.Run();
 	}
 }

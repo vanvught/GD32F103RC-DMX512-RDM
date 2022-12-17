@@ -2464,8 +2464,8 @@ Disassembly of section .text:
  80018be:	481b      	ldr	r0, [pc, #108]	; (800192c <Hardware::Hardware()+0x140>)
  80018c0:	f000 fc86 	bl	80021d0 <timer_enable>
  80018c4:	f000 fd2e 	bl	8002324 <gd32_adc_init()>
- 80018c8:	220b      	movs	r2, #11
- 80018ca:	2309      	movs	r3, #9
+ 80018c8:	2211      	movs	r2, #17
+ 80018ca:	230b      	movs	r3, #11
  80018cc:	2400      	movs	r4, #0
  80018ce:	e9cd 230c 	strd	r2, r3, [sp, #48]	; 0x30
  80018d2:	237a      	movs	r3, #122	; 0x7a

@@ -160,12 +160,24 @@ static constexpr uint32_t INVERTED = 0;
 }  // namespace hal
 #endif
 
+/**
+ * SPI flash
+ */
+
+#define SPI_FLASH_CS_GPIOx		SPI_NSS_GPIOx
+#define SPI_FLASH_CS_RCU_GPIOx	SPI_NSS_RCU_GPIOx
+#define SPI_FLASH_CS_GPIO_PINx	SPI_NSS_GPIO_PINx
+
+/**
+ * MCU and BOARD name
+ */
+
+#define GD32_MCU_NAME			"GD32F103RC"
+#define GD32_BOARD_NAME			"GD32F103RC"
+
 #include "mcu/gd32f10x_mcu.h"
 #include "gd32_gpio.h"
 
-#define GD32_MCU_NAME			"GD32F103RC"
-
-#define GD32_BOARD_NAME			"GD32F103RC"
 #define GD32_BOARD_LED1			GD32_PORT_TO_GPIO(GD32_GPIO_PORTC, 0)
 #define GD32_BOARD_LED2			GD32_PORT_TO_GPIO(GD32_GPIO_PORTC, 2)
 #define GD32_BOARD_LED3			GD32_PORT_TO_GPIO(GD32_GPIO_PORTC, 3)

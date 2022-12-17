@@ -39,16 +39,13 @@
 #include "rdmsensorsparams.h"
 #include "rdmsubdevicesparams.h"
 
-#include "factorydefaults.h"
-
 #include "pixeldmxparams.h"
 #include "ws28xxdmx.h"
 #include "pixeldmxstartstop.h"
 #include "pixeldmxparamsrdm.h"
 #include "pixeltestpattern.h"
 
-#include "flashrom.h"
-#include "spiflashstore.h"
+#include "configstore.h"
 #include "storepixeldmx.h"
 #include "storerdmdevice.h"
 #include "storerdmsensors.h"
@@ -70,8 +67,8 @@ void main() {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	FlashRom flash;
-	SpiFlashStore spiFlashStore;
+
+	ConfigStore configStore;
 
 	lb.SetMode(ledblink::Mode::OFF_ON);
 
@@ -157,12 +154,8 @@ void main() {
 	}
 
 	rdmResponder.SetRDMDeviceStore(&storeRdmDevice);
-
-	FactoryDefaults factoryDefaults;
-	rdmResponder.SetRDMFactoryDefaults(&factoryDefaults);
 	rdmResponder.Start();
 	rdmResponder.DmxDisableOutput(!isConfigMode && (nTestPattern != pixelpatterns::Pattern::NONE));
-
 	rdmResponder.Print();
 
 	if (isConfigMode) {
@@ -213,7 +206,7 @@ void main() {
 	for(;;) {
 		hw.WatchdogFeed();
 		rdmResponder.Run();
-		spiFlashStore.Flash();
+		configStore.Flash();
 		if (__builtin_expect((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE), 0)) {
 			pixelTestPattern.Run();
 		}
