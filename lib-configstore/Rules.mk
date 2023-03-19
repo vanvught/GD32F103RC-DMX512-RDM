@@ -54,6 +54,11 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_INCLUDES+=../lib-e131/include
 	endif
 	
+	ifeq ($(findstring NODE_OSC_CLIENT,$(MAKE_FLAGS)), NODE_OSC_CLIENT)
+		EXTRA_SRCDIR+=src/oscclient
+		EXTRA_INCLUDES+=../lib-oscclient/include
+	endif
+	
 	ifeq ($(findstring OUTPUT_DMX_PIXEL,$(MAKE_FLAGS)), OUTPUT_DMX_PIXEL)
 		EXTRA_SRCDIR+=src/pixel
 		EXTRA_INCLUDES+=../lib-ws28xxdmx/include ../lib-ws28xx/include
@@ -123,7 +128,6 @@ EXTRA_INCLUDES+=../lib-dmxserial/include
 EXTRA_INCLUDES+=../lib-dmxmonitor/include
 EXTRA_INCLUDES+=../lib-dmxreceiver/include ../lib-dmx/include
 EXTRA_INCLUDES+=../lib-oscserver/include 
-EXTRA_INCLUDES+=../lib-oscclient/include
 EXTRA_INCLUDES+=../lib-rdm/include ../lib-rdmsensor/include ../lib-rdmsubdevice/include
 EXTRA_INCLUDES+=../lib-remoteconfig/include
 EXTRA_INCLUDES+=../lib-spiflashinstall/include

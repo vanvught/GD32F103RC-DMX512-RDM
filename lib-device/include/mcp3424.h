@@ -1,8 +1,8 @@
 /**
- * @file ledblink.h
+ * @file mcp3424.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,35 +23,60 @@
  * THE SOFTWARE.
  */
 
-#ifndef LEDBLINK_H
-#define LEDBLINK_H
+#ifndef MCP3424_H_
+#define MCP3424_H_
 
 #include <cstdint>
 
-namespace ledblink {
-enum class Mode {
-	OFF_OFF, OFF_ON, NORMAL, DATA, FAST, UNKNOWN
-};
-}  // namespace ledblink
+#include "hal_i2c.h"
 
-class LedBlinkDisplay {
+namespace adc {
+namespace mcp3424 {
+enum class Gain {
+	PGA_X1,			///< Default
+	PGA_X2,
+	PGA_X4,
+	PGA_X8,
+};
+
+enum class Resolution {
+	SAMPLE_12BITS,	///< Default
+	SAMPLE_14BITS,
+	SAMPLE_16BITS,
+	SAMPLE_18BITS
+};
+
+enum class Conversion {
+	ONE_SHOT,
+	CONTINUOUS		///< Default
+};
+}  // namespace mcp3424
+}  // namespace adc
+
+class MCP3424: HAL_I2C {
 public:
-	virtual ~LedBlinkDisplay() {
+	MCP3424(uint8_t nAddress = 0);
+
+	bool IsConnected() {
+		return m_IsConnected;
 	}
 
-	virtual void Print(uint32_t nState)=0;
+	void SetGain(const adc::mcp3424::Gain gain);
+	adc::mcp3424::Gain GetGain() const;
+
+	void SetResolution(const adc::mcp3424::Resolution resolution);
+	adc::mcp3424::Resolution GetResolution() const;
+
+	void SetConversion(const adc::mcp3424::Conversion conversion);
+	adc::mcp3424::Conversion GetConversion() const;
+
+	uint32_t GetRaw(const uint8_t nChannel);
+	double GetVoltage(const uint8_t nChannel);
+
+private:
+	bool m_IsConnected { false };
+	uint8_t m_nConfig;
+	double m_lsb;
 };
 
-#if defined (BARE_METAL)
-# if defined (H3)
-#  include "h3/ledblink.h"
-# elif defined (GD32)
-#  include "gd32/ledblink.h"
-# else
-#  include "rpi/ledblink.h"
-# endif
-#else
-# include "linux/ledblink.h"
-#endif
-
-#endif /* LEDBLINK_H */
+#endif /* IMCP3424_H_ */

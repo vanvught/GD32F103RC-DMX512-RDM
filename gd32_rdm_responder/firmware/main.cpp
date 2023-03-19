@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,6 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "ledblink.h"
 
 #include "displayudf.h"
 #include "display_timeout.h"
@@ -37,7 +36,9 @@
 #include "rdmpersonality.h"
 #include "rdmdeviceparams.h"
 #include "rdmsensorsparams.h"
-#include "rdmsubdevicesparams.h"
+#if defined (ENABLE_RDM_SUBDEVICES)
+# include "rdmsubdevicesparams.h"
+#endif
 
 #include "pixeldmxparams.h"
 #include "ws28xxdmx.h"
@@ -45,11 +46,20 @@
 #include "pixeldmxparamsrdm.h"
 #include "pixeltestpattern.h"
 
+#if !defined(NO_EMAC)
+# include "remoteconfig.h"
+# include "remoteconfigparams.h"
+# include "storeremoteconfig.h"
+# include "storenetwork.h"
+#endif
+
 #include "configstore.h"
 #include "storepixeldmx.h"
 #include "storerdmdevice.h"
 #include "storerdmsensors.h"
-#include "storerdmsubdevices.h"
+#if defined (ENABLE_RDM_SUBDEVICES)
+# include "storerdmsubdevices.h"
+#endif
 #include "storedisplayudf.h"
 
 #include "firmwareversion.h"
@@ -64,17 +74,21 @@ void Hardware::RebootHandler() {
 void main() {
 	Hardware hw;
 	Network nw;
-	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	ConfigStore configStore;
 
-	lb.SetMode(ledblink::Mode::OFF_ON);
-
 	const auto isConfigMode = is_config_mode();
 
-	fw.Print();
+	fw.Print("RDM Responder");
+
+#if !defined(NO_EMAC)
+	StoreNetwork storeNetwork;
+	nw.SetNetworkStore(&storeNetwork);
+	nw.Init(&storeNetwork);
+	nw.Print();
+#endif
 
 	PixelDmxConfiguration pixelDmxConfiguration;
 
@@ -117,22 +131,6 @@ void main() {
 
 	PixelDmxParamsRdm pixelDmxParamsRdm(&storePixelDmx);
 
-	StoreRDMSensors storeRdmSensors;
-	RDMSensorsParams rdmSensorsParams(&storeRdmSensors);
-
-	if (rdmSensorsParams.Load()) {
-		rdmSensorsParams.Set();
-		rdmSensorsParams.Dump();
-	}
-
-	StoreRDMSubDevices storeRdmSubDevices;
-	RDMSubDevicesParams rdmSubDevicesParams(&storeRdmSubDevices);
-
-	if (rdmSubDevicesParams.Load()) {
-		rdmSubDevicesParams.Set();
-		rdmSubDevicesParams.Dump();
-	}
-
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH];
 	snprintf(aDescription, sizeof(aDescription) - 1U, "%s:%u G%u [%s]",
 			PixelType::GetType(pixelDmxConfiguration.GetType()),
@@ -143,6 +141,25 @@ void main() {
 	RDMPersonality *personalities[2] = { new RDMPersonality(aDescription, &pixelDmx), new RDMPersonality("Config mode", &pixelDmxParamsRdm) };
 
 	RDMResponder rdmResponder(personalities, 2);
+
+	StoreRDMSensors storeRdmSensors;
+	RDMSensorsParams rdmSensorsParams(&storeRdmSensors);
+
+	if (rdmSensorsParams.Load()) {
+		rdmSensorsParams.Set();
+		rdmSensorsParams.Dump();
+	}
+
+#if defined (ENABLE_RDM_SUBDEVICES)
+	StoreRDMSubDevices storeRdmSubDevices;
+	RDMSubDevicesParams rdmSubDevicesParams(&storeRdmSubDevices);
+
+	if (rdmSubDevicesParams.Load()) {
+		rdmSubDevicesParams.Set();
+		rdmSubDevicesParams.Dump();
+	}
+#endif
+
 	rdmResponder.Init();
 
 	StoreRDMDevice storeRdmDevice;
@@ -170,6 +187,19 @@ void main() {
 		printf("Test pattern : %s [%u]\n", PixelPatterns::GetName(nTestPattern), static_cast<uint32_t>(nTestPattern));
 	}
 
+#if !defined(NO_EMAC)
+	RemoteConfig remoteConfig(remoteconfig::Node::RDMNET_LLRP_ONLY, remoteconfig::Output::PIXEL);
+	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
+
+	if(remoteConfigParams.Load()) {
+		remoteConfigParams.Set(&remoteConfig);
+		remoteConfigParams.Dump();
+	}
+
+	while (configStore.Flash())
+		;
+#endif
+
 	display.SetTitle("RDM Responder Pixel 1");
 	display.Set(2, displayudf::Labels::VERSION);
 	display.Set(6, displayudf::Labels::DMX_START_ADDRESS);
@@ -183,8 +213,8 @@ void main() {
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
 	if (displayUdfParams.Load()) {
-		displayUdfParams.Set(&display);
 		displayUdfParams.Dump();
+		displayUdfParams.Set(&display);
 	}
 
 	display.Show();
@@ -199,18 +229,21 @@ void main() {
 		display.Printf(6, "%s:%u", PixelPatterns::GetName(nTestPattern), static_cast<uint32_t>(nTestPattern));
 	}
 
-	lb.SetMode(ledblink::Mode::NORMAL);
-
+	hw.SetMode(hardware::ledblink::Mode::NORMAL);
 	hw.WatchdogInit();
 
 	for(;;) {
 		hw.WatchdogFeed();
 		rdmResponder.Run();
 		configStore.Flash();
+#if !defined(NO_EMAC)
+		nw.Run();
+		remoteConfig.Run();
+#endif
 		if (__builtin_expect((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE), 0)) {
 			pixelTestPattern.Run();
 		}
 		display.Run();
-		lb.Run();
+		hw.Run();
 	}
 }

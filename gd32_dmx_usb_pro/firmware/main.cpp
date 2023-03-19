@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,6 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "ledblink.h"
 #include "display.h"
 
 #include "widget.h"
@@ -53,7 +52,6 @@ static constexpr TRDMDeviceInfoData deviceLabel ALIGNED = { const_cast<char*>("G
 void main() {
 	Hardware hw;
 	Network nw;
-	LedBlink lb;
 	Display display; // Not supported, yet.
 
 	ConfigStore configStore;
@@ -103,6 +101,6 @@ void main() {
 		hw.WatchdogFeed();
 		widget.Run();
 		configStore.Flash();
-		lb.Run();
+		hw.Run();
 	}
 }
