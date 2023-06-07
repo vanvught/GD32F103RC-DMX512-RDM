@@ -27,7 +27,7 @@
 #define DISPLAYUDF_H_
 
 #include <cstdint>
-#include <stdarg.h>
+#include <cstdarg>
 
 #include "display.h"
 
@@ -298,8 +298,9 @@ public:
 private:
 	char m_aTitle[32];
 	uint8_t m_aLabels[static_cast<uint32_t>(displayudf::Labels::UNKNOWN)];
+#if defined (NODE_ARTNET) || defined (NODE_E131)	
 	uint32_t m_nPortIndexOffset { 0 };
-
+#endif
 #if defined (DISPLAYUDF_DMX_INFO)
 	struct DmxInfo {
 		displayudf::dmx::PortDir portDir;

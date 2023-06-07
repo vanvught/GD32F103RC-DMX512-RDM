@@ -82,10 +82,6 @@
 #define KEY2_GPIOx				GPIOB
 #define KEY2_RCU_GPIOx			RCU_GPIOB
 
-#define KEY3_PINx				GPIO_PIN_11
-#define KEY3_GPIOx				GPIOA
-#define KEY3_RCU_GPIOx			RCU_GPIOA
-
 /**
  * I2C
  */

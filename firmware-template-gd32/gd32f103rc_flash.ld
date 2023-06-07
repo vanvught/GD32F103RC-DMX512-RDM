@@ -122,8 +122,8 @@ SECTIONS
   .stack ORIGIN(RAM) + LENGTH(RAM) - __stack_size :
   {
 	. = ALIGN(4);
-    PROVIDE( _heap_end = . ); 
-    . = __stack_size;  
+    PROVIDE( stack_low = . ); 
+    . = . + __stack_size;  
     PROVIDE( _sp = . ); 
     . = ALIGN(4);
   } >RAM AT>RAM

@@ -1,8 +1,10 @@
 /**
- * @file cstddef
+ * @file usb.cpp
+ *
+ * @brief
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2015-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +25,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef CSTDDEF_
-#define CSTDDEF_
+#include <cstdint>
 
-#ifdef __cplusplus
-# include <stddef.h>
-#endif
+#include "ft245rl.h"
 
-#endif /* CSTDDEF_ */
+uint8_t usb_read_byte() {
+	while (!FT245RL_data_available())
+		;
+
+	return FT245RL_read_data();
+}
+
+void usb_send_byte(uint8_t byte) {
+	while (!FT245RL_can_write())
+		;
+	FT245RL_write_data(byte);
+}
