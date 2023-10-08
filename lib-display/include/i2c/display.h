@@ -246,6 +246,14 @@ public:
 		m_LcdDisplay->SetFlipVertically(doFlipVertically);
 	}
 
+	void ClearEndOfLine() {
+		if (m_LcdDisplay == nullptr) {
+			return;
+		}
+
+		m_LcdDisplay->ClearEndOfLine();
+	}
+
 	bool GetFlipVertically() const {
 		return m_bIsFlippedVertically;
 	}

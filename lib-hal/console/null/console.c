@@ -1,8 +1,8 @@
 /**
- * net.c
+ * @file console.c
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,25 +25,20 @@
 
 #include <stdint.h>
 
-#include "gd32.h"
-
-extern enet_descriptors_struct  *dma_current_rxdesc;
-
-int emac_eth_recv(uint8_t **packet) {
-	const uint32_t size = enet_rxframe_size_get();
-
-	if (size > 0) {
-		*packet = (uint8_t *) (enet_desc_information_get(dma_current_rxdesc, RXDESC_BUFFER_1_ADDR));
-		return size;
-	}
-
-	return -1;
+void console_init(void) {
 }
 
-void emac_free_pkt(void) {
-	ENET_NOCOPY_FRAME_RECEIVE();
+void console_putc(__attribute__((unused)) int i) {
 }
 
-void emac_eth_send(void *packet, int len) {
-	enet_frame_transmit((uint8_t *) packet, len);
+void console_puts(__attribute__((unused)) const char *p) {
+}
+
+void console_write(__attribute__((unused)) const char *p, __attribute__((unused)) unsigned int i) {
+}
+
+void console_status(__attribute__((unused))  uint32_t i, __attribute__((unused)) const char *p) {
+}
+
+void console_error(__attribute__((unused)) const char *p) {
 }

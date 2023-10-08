@@ -49,6 +49,10 @@ public:
 		return m_nRows;
 	}
 
+	void ClearEndOfLine() {
+		m_bClearEndOfLine = true;
+	}
+
 	virtual bool Start()= 0;
 
 	virtual void Cls()= 0;
@@ -71,6 +75,7 @@ public:
 protected:
 	uint32_t m_nCols;
 	uint32_t m_nRows;
+	bool m_bClearEndOfLine { false };
 };
 
 #endif /* DISPLAYSET_H_ */

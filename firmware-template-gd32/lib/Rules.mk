@@ -1,3 +1,6 @@
+$(info "lib/Rules.mk")
+$(info $$MAKE_FLAGS [${MAKE_FLAGS}])
+
 PREFIX ?= arm-none-eabi-
 
 CC	= $(PREFIX)gcc
@@ -7,6 +10,7 @@ LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
 FAMILY?=gd32f10x
+MCU?=GD32F103RC
 BOARD?=BOARD_GD32F103RC
 
 FAMILY:=$(shell echo $(FAMILY) | tr A-Z a-z)
@@ -14,8 +18,10 @@ FAMILY_UC=$(shell echo $(FAMILY) | tr a-w A-W)
 
 $(info $$FAMILY [${FAMILY}])
 $(info $$FAMILY_UC [${FAMILY_UC}])
+$(info $$BOARD [${BOARD}])
+$(info $$ENET_PHY [${ENET_PHY}])
 
-SRCDIR = src src/gd32 $(EXTRA_SRCDIR)
+SRCDIR=src src/gd32 $(EXTRA_SRCDIR)
 
 include ../firmware-template-gd32/Includes.mk
 
@@ -23,18 +29,18 @@ DEFINES:=$(addprefix -D,$(DEFINES))
 DEFINES+=-D_TIME_STAMP_YEAR_=$(shell date  +"%Y") -D_TIME_STAMP_MONTH_=$(shell date  +"%-m") -D_TIME_STAMP_DAY_=$(shell date  +"%-d")
 DEFINES+=-DCONFIG_STORE_USE_ROM
 
-COPS=-DBARE_METAL -DGD32 -DGD32F10X_HD -D$(BOARD)
-#COPS+=-DDISABLE_PRINTF_FLOAT
+COPS=-DBARE_METAL -DGD32 -DGD32F10X_HD -D$(MCU) -D$(BOARD)
 COPS+=$(DEFINES) $(MAKE_FLAGS) $(INCLUDES)
 COPS+=-Os -mcpu=cortex-m3 -mthumb
 COPS+=-nostartfiles -ffreestanding -nostdlib
 COPS+=-fstack-usage
-COPS+=-Wstack-usage=4096
 COPS+=-ffunction-sections -fdata-sections
+COPS+=-Wall -Werror -Wpedantic -Wextra -Wunused -Wsign-conversion -Wconversion
+COPS+=-Wduplicated-cond -Wlogical-op
 
-CPPOPS=-std=c++11 
+CPPOPS=-std=c++11
 CPPOPS+=-Wnon-virtual-dtor -Woverloaded-virtual -Wnull-dereference -fno-rtti -fno-exceptions -fno-unwind-tables
-#CPPOPS+=-Wuseless-cast -Wold-style-cast
+CPPOPS+=-Wuseless-cast -Wold-style-cast
 CPPOPS+=-fno-threadsafe-statics
 
 CURR_DIR:=$(notdir $(patsubst %/,%,$(CURDIR)))

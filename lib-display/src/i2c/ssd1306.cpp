@@ -352,6 +352,13 @@ void Ssd1306::PutString(const char *pString) {
 		Ssd1306::PutChar(static_cast<int>(*p));
 		p++;
 	}
+
+	if (m_bClearEndOfLine) {
+		m_bClearEndOfLine = false;
+		for (auto i = static_cast<uint32_t>(p -  pString); i < m_nCols; i++) {
+			Ssd1306::PutChar(' ');
+		}
+	}
 }
 
 /**
@@ -385,8 +392,17 @@ void Ssd1306::Text(const char *pData, uint32_t nLength) {
 		nLength = m_nCols;
 	}
 
-	for (uint32_t i = 0; i < nLength; i++) {
+	uint32_t i;
+
+	for (i = 0; i < nLength; i++) {
 		Ssd1306::PutChar(pData[i]);
+	}
+
+	if (m_bClearEndOfLine) {
+		m_bClearEndOfLine = false;
+		for (; i < m_nCols; i++) {
+			Ssd1306::PutChar(' ');
+		}
 	}
 }
 

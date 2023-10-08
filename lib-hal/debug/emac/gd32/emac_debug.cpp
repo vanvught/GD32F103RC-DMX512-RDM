@@ -1,8 +1,8 @@
 /**
- * @file dmxconfigudp.cpp
+ * @file  emac_debug.cpp
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,18 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include <cstdio>
 
-#include  "dmxconfigudp.h"
+#include "gd32.h"
 
-int32_t DmxConfigUdp::s_nHandle = -1;
-char *DmxConfigUdp::s_pUdpBuffer = nullptr;
+static uint32_t s_nCounter;
+
+void emac_debug_run() {
+	uint32_t rxfifo_drop;
+	uint32_t rxdma_drop;
+	enet_missed_frame_counter_get(&rxfifo_drop, &rxdma_drop);
+
+	if ((rxfifo_drop != 0) || (rxdma_drop != 0)) {
+		printf("%u: RxFIFO: %u RxDMA: %u\n", ++s_nCounter, rxfifo_drop, rxdma_drop);
+	}
+}

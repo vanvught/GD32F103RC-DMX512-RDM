@@ -1,8 +1,8 @@
 /**
- * @file bitbanging595.cpp
+ * @file dso_handle.cpp
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,11 @@
  * THE SOFTWARE.
  */
 
-#include "gd32_bitbanging595.h"
+extern "C" int __aeabi_atexit(void *object, void (*destructor)(void *), void *dso_handle) {
+	static_cast<void>(object);
+	static_cast<void>(destructor);
+	static_cast<void>(dso_handle);
+	return 0;
+}
 
-BitBanging595 *BitBanging595::s_pThis;
+void *__dso_handle = nullptr;

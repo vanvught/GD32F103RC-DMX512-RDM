@@ -66,6 +66,8 @@ lib-network/src/net/*
 *.list
 *.map
 *.bin
+*.size
 
 do-tftp.sh
 udp_send
+
