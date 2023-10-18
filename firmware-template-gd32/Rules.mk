@@ -1,3 +1,5 @@
+$(info "Rules.mk")
+
 PREFIX ?= arm-none-eabi-
 
 CC	 = $(PREFIX)gcc
@@ -6,16 +8,9 @@ AS	 = $(CC)
 LD	 = $(PREFIX)ld
 AR	 = $(PREFIX)ar
 
-FAMILY?=gd32f10x
 BOARD?=BOARD_GD32F103RC
 
-FAMILY:=$(shell echo $(FAMILY) | tr A-Z a-z)
-FAMILY_UC=$(shell echo $(FAMILY) | tr a-w A-W)
-
-$(info $$FAMILY [${FAMILY}])
-$(info $$FAMILY_UC [${FAMILY_UC}])
-
-# Output 
+# Output
 TARGET=$(FAMILY).bin
 LIST=$(FAMILY).list
 MAP=$(FAMILY).map
@@ -24,16 +19,16 @@ BUILD=build_gd32/
 # Input
 SOURCE = ./
 FIRMWARE_DIR = ./../firmware-template-gd32/
-LINKER = $(FIRMWARE_DIR)/gd32f103rc_flash.ld
 
+DEFINES:=$(addprefix -D,$(DEFINES))
+DEFINES+=-DCONFIG_STORE_USE_ROM
+
+MCU=GD32F103RC
+
+include ../firmware-template-gd32/Mcu.mk
 include ../firmware-template/libs.mk
 
 LIBS+=c++ c gd32
-
-$(info [${LIBS}])
-	
-DEFINES:=$(addprefix -D,$(DEFINES))
-DEFINES+=-DCONFIG_STORE_USE_ROM
 
 include ../firmware-template-gd32/Includes.mk
 
@@ -51,21 +46,23 @@ LDLIBS:=$(addprefix -l,$(LIBS))
 # The variables for the dependency check 
 LIBDEP=$(addprefix ../lib-,$(LIBS))
 
+$(info $$BOARD [${BOARD}])
+$(info $$DEFINES [${DEFINES}])
+$(info $$LIBS [${LIBS}])
 $(info $$LIBDEP [${LIBDEP}])
 
-COPS=-DBARE_METAL -DGD32 -DGD32F10X_HD -D$(BOARD)
-#COPS+=-DDISABLE_PRINTF_FLOAT
-COPS+=$(DEFINES) $(MAKE_FLAGS) $(INCLUDES)
-COPS+=$(LIBINCDIRS)
+COPS=-DBARE_METAL -DGD32 -D$(LINE_UC) -D$(MCU) -D$(BOARD)
+COPS+=$(DEFINES) $(MAKE_FLAGS) $(INCLUDES) $(LIBINCDIRS)
 COPS+=-Os -mcpu=cortex-m3 -mthumb
 COPS+=-nostartfiles -ffreestanding -nostdlib
 COPS+=-fstack-usage
-COPS+=-Wstack-usage=4096
 COPS+=-ffunction-sections -fdata-sections
+COPS+=-Wall -Werror -Wpedantic -Wextra -Wunused -Wsign-conversion -Wconversion
+COPS+=-Wduplicated-cond -Wlogical-op
 
-CPPOPS=-std=c++11 
+CPPOPS=-std=c++11
 CPPOPS+=-Wnon-virtual-dtor -Woverloaded-virtual -Wnull-dereference -fno-rtti -fno-exceptions -fno-unwind-tables
-#CPPOPS+=-Wuseless-cast -Wold-style-cast
+CPPOPS+=-Wuseless-cast -Wold-style-cast
 CPPOPS+=-fno-threadsafe-statics
 
 LDOPS=--gc-sections --print-gc-sections
@@ -84,18 +81,17 @@ OBJECTS:=$(ASM_OBJECTS) $(C_OBJECTS)
 
 define compile-objects
 $(BUILD)$1/%.o: $(SOURCE)$1/%.cpp
-	$(CPP) $(COPS) $(CPPOPS) -c $$< -o $$@	
+	$(CPP) $(COPS) $(CPPOPS) -c $$< -o $$@
 
 $(BUILD)$1/%.o: $(SOURCE)$1/%.c
 	$(CC) $(COPS) -c $$< -o $$@
-	
+
 $(BUILD)$1/%.o: $(SOURCE)$1/%.S
 	$(CC) $(COPS) -D__ASSEMBLY__ -c $$< -o $$@
 endef
 
-
 all : builddirs prerequisites $(TARGET)
-	
+
 .PHONY: clean builddirs
 
 builddirs:
@@ -118,7 +114,7 @@ clean: $(LIBDEP)
 lisdep: $(LIBDEP)
 
 $(LIBDEP):
-	$(MAKE) -f Makefile.GD32 $(MAKECMDGOALS) 'FAMILY=${FAMILY}' 'MAKE_FLAGS=$(DEFINES)' -C $@ 
+	$(MAKE) -f Makefile.GD32 $(MAKECMDGOALS) 'FAMILY=${FAMILY}' 'MCU=${MCU}' 'BOARD=${BOARD}' 'MAKE_FLAGS=$(DEFINES)' -C $@
 
 # Build bin
 
@@ -127,13 +123,18 @@ $(BUILD_DIRS) :
 
 $(BUILD)startup_$(FAMILY)_hd.o : $(FIRMWARE_DIR)/startup_$(FAMILY)_hd.S
 	$(AS) $(COPS) -D__ASSEMBLY__ -c $(FIRMWARE_DIR)/startup_$(FAMILY)_hd.S -o $(BUILD)startup_$(FAMILY)_hd.o
-	
+
 $(BUILD)main.elf: Makefile.GD32 $(LINKER) $(BUILD)startup_$(FAMILY)_hd.o $(OBJECTS) $(LIBDEP)
 	$(LD) $(BUILD)startup_$(FAMILY)_hd.o $(OBJECTS) -Map $(MAP) -T $(LINKER) $(LDOPS) -o $(BUILD)main.elf $(LIBGD32) $(LDLIBS) $(PLATFORM_LIBGCC) -lgcc 
 	$(PREFIX)objdump -D $(BUILD)main.elf | $(PREFIX)c++filt > $(LIST)
-	$(PREFIX)size -A -x $(BUILD)main.elf
+	$(PREFIX)size -A -x $(BUILD)main.elf > $(FAMILY).size
+	$(MAKE) -f Makefile.GD32 calculate_unused_ram SIZE_FILE=$(FAMILY).size LINKER_SCRIPT=$(LINKER)
 
-$(TARGET) : $(BUILD)main.elf 
-	$(PREFIX)objcopy $(BUILD)main.elf -O binary $(TARGET)	
-	
+$(TARGET) : $(BUILD)main.elf
+	$(PREFIX)objcopy $(BUILD)main.elf -O binary $(TARGET)
+
 $(foreach bdir,$(SRCDIR),$(eval $(call compile-objects,$(bdir))))
+
+.PHONY: calculate_unused_ram
+calculate_unused_ram: $(FAMILY).size $(LINKER)
+	@$(FIRMWARE_DIR)/calculate_unused_ram.sh $(FAMILY).size $(LINKER)

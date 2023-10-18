@@ -63,6 +63,11 @@ lib-network/src/apps/*
 lib-network/src/emac/*
 lib-network/src/net/*
 
+*.list
+*.map
 *.bin
+*.size
+
 do-tftp.sh
 udp_send
+

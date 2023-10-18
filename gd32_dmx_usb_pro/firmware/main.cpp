@@ -51,10 +51,9 @@ static constexpr TRDMDeviceInfoData deviceLabel ALIGNED = { const_cast<char*>("G
 
 void main() {
 	Hardware hw;
-	Network nw;
 	Display display; // Not supported, yet.
-
 	ConfigStore configStore;
+	Network nw;
 
 	Widget widget;
 	widget.SetPortDirection(0, dmx::PortDirection::INP, false);

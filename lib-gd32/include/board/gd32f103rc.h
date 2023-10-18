@@ -2,7 +2,7 @@
  * @file gd32f103rc.h
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,22 +55,6 @@
 #define LED_BLINK_GPIO_CLK		LED1_RCU_GPIOx
 
 /**
- * LEDs bit-banging 595	--> Using SPI2 pin's: MOSI, SCK and NSS
- */
-
-#define LED595_DATA_GPIO_PINx	GPIO_PIN_5
-#define LED595_DATA_RCU_GPIOx	RCU_GPIOB
-#define LED595_DATA_GPIOx		GPIOB
-
-#define LED595_CLK_GPIO_PINx	GPIO_PIN_3
-#define LED595_CLK_RCU_GPIOx	RCU_GPIOB
-#define LED595_CLK_GPIOx		GPIOB
-
-#define LED595_LOAD_GPIO_PINx	GPIO_PIN_15
-#define LED595_LOAD_RCU_GPIOx	RCU_GPIOA
-#define LED595_LOAD_GPIOx		GPIOA
-
-/**
  * KEYs
  */
 
@@ -81,10 +65,6 @@
 #define KEY2_PINx				GPIO_PIN_14
 #define KEY2_GPIOx				GPIOB
 #define KEY2_RCU_GPIOx			RCU_GPIOB
-
-#define KEY3_PINx				GPIO_PIN_11
-#define KEY3_GPIOx				GPIOA
-#define KEY3_RCU_GPIOx			RCU_GPIOA
 
 /**
  * I2C
@@ -154,8 +134,6 @@ static constexpr uint32_t TCNET = 0;
 // DMX
 static constexpr uint32_t PORT_A_RX = 0;
 static constexpr uint32_t PORT_A_TX = 0;
-//
-static constexpr uint32_t INVERTED = 0;
 }  // namespace panelled
 }  // namespace hal
 #endif
