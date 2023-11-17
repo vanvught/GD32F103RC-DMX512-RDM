@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
  */
 
 #include <cstdint>
-#include <stdio.h>
+#include <cstdio>
 #include <time.h>
 
 #include "hardware.h"
@@ -32,10 +32,9 @@
 
 #include "gd32.h"
 
-// Skip not used PINs and skip USART0
-static constexpr auto GPIOA_PINS = ~(GPIO_PIN_0 | GPIO_PIN_3 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10);
-static constexpr auto GPIOB_PINS = ~(GPIO_PIN_1);
-static constexpr auto GPIOC_PINS = ~(GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_13);
+static constexpr auto GPIOA_PINS = (GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_11 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15);
+static constexpr auto GPIOB_PINS = (GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_10 | GPIO_PIN_15);
+static constexpr auto GPIOC_PINS = (GPIO_PIN_0 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_6  | GPIO_PIN_7  | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12);
 static constexpr auto GPIOD_PINS = GPIO_PIN_2;
 
 int main(void) {

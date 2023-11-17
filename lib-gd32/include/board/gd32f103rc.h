@@ -71,9 +71,7 @@
  */
 
 #define I2C0_REMAP
-#if defined (I2C0_REMAP)
-# define I2C_REMAP				GPIO_I2C0_REMAP
-#endif
+#define I2C_REMAP				GPIO_I2C0_REMAP
 #define I2C_PERIPH				I2C0_PERIPH
 #define I2C_RCU_CLK				I2C0_RCU_CLK
 #define I2C_GPIO_SCL_PORT		I2C0_SCL_GPIOx
@@ -87,10 +85,6 @@
  * SPI
  */
 
-// #define SPI2_REMAP
-#if defined (SPI2_REMAP)
-# define SPI_REMAP				SPI2_REMAP_GPIO
-#endif
 #define SPI_PERIPH				SPI2_PERIPH
 #define SPI_NSS_GPIOx			SPI2_NSS_GPIOx
 #define SPI_NSS_RCU_GPIOx		SPI2_NSS_RCU_GPIOx
@@ -109,10 +103,7 @@
  */
 
 #define USART0_REMAP
-// #define USART1_REMAP
-// #define USART2_FULL_REMAP
 #define USART2_PARTIAL_REMAP
-// #define UART3_REMAP
 
 /**
  * Panel LEDs

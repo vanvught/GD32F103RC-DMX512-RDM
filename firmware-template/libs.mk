@@ -1,9 +1,6 @@
 $(info $$DEFINES [${DEFINES}])
 
 ifeq ($(findstring RDM_RESPONDER,$(DEFINES)),RDM_RESPONDER)
-	ifneq ($(findstring rdmresponder,$(LIBS)),rdmresponder)
-		LIBS+=rdmresponder
-	endif
 	ifneq ($(findstring rdmsensor,$(LIBS)),rdmsensor)
 		LIBS+=rdmsensor device
 	endif
@@ -15,18 +12,17 @@ ifeq ($(findstring RDM_RESPONDER,$(DEFINES)),RDM_RESPONDER)
 			LIBS+=dmxreceiver
 		endif
 	endif
-	LIBS+=dmx
 endif
 
 ifeq ($(findstring NODE_DMX,$(DEFINES)),NODE_DMX)
-	LIBS+=dmxreceiver dmx
+	LIBS+=dmxreceiver
 endif
-
-LIBS+=rdm
 
 ifeq ($(findstring OUTPUT_DMX_SEND,$(DEFINES)),OUTPUT_DMX_SEND)
-	LIBS+=dmxsend dmx
+	LIBS+=dmxsend
 endif
+
+LIBS+=rdm dmx
 
 ifeq ($(findstring OUTPUT_DMX_PIXEL,$(DEFINES)),OUTPUT_DMX_PIXEL)
 	LIBS+=ws28xxdmx ws28xx

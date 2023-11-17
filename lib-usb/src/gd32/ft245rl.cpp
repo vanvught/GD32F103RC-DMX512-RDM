@@ -1,7 +1,7 @@
 /**
- * @file ft245rl.c
+ * @file ft245rl.cpp
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,8 @@
 #include "gd32_gpio.h"
 #include "gd32.h"
 
-#define D0		GPIO_EXT_3	// PB7
-#define D1		GPIO_EXT_5	// PB6
+#define D0		GPIO_EXT_3	// PB9
+#define D1		GPIO_EXT_5	// PB8
 #define D2		GPIO_EXT_7	// PA6
 #define D3		GPIO_EXT_26	// PA14
 #define D4		GPIO_EXT_24	// PA15
@@ -47,7 +47,7 @@
 #define NOP_COUNT_WRITE 2
 
 #define GPIOA_DATA_PINS		(GPIO_PIN_6 | GPIO_PIN_14 | GPIO_PIN_15)
-#define GPIOB_DATA_PINS		(GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7)
+#define GPIOB_DATA_PINS		(GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_8 | GPIO_PIN_9)
 /**
  * Set the GPIOs for data to output
  */
@@ -69,7 +69,7 @@ static void data_gpio_fsel_input() {
  * Set RD#, WR to output, TXE#, RXF# to input.
  * Set RD# to high, set WR to low
  */
-void FT245RL_init(void) {
+void FT245RL_init() {
 	rcu_periph_clock_enable(RCU_GPIOA);
 	rcu_periph_clock_enable(RCU_GPIOB);
 	rcu_periph_clock_enable(RCU_AF);
@@ -100,7 +100,7 @@ void FT245RL_write_data(uint8_t data) {
 
 	uint8_t i = NOP_COUNT_WRITE;
 	for (; i > 0; i--) {
-		asm volatile("nop"::);
+		__NOP();
 	}
 
 	// Put the data on the bus.
@@ -114,8 +114,8 @@ void FT245RL_write_data(uint8_t data) {
 	GPIO_BC(GPIOA) = pin;
 
 	pin = 0;
-	pin |= (data &   1) ? (GPIO_PIN_7) : 0;	// D0
-	pin |= (data &   2) ? (GPIO_PIN_6) : 0;	// D1
+	pin |= (data &   1) ? (GPIO_PIN_9) : 0;	// D0
+	pin |= (data &   2) ? (GPIO_PIN_8) : 0;	// D1
 	pin |= (data &  32) ? (GPIO_PIN_4) : 0;	// D5
 	pin |= (data &  64) ? (GPIO_PIN_5) : 0;	// D6
 	pin |= (data & 128) ? (GPIO_PIN_3) : 0;	// D7
@@ -125,7 +125,7 @@ void FT245RL_write_data(uint8_t data) {
 
 	i = NOP_COUNT_WRITE;
 	for (; i > 0; i--) {
-		asm volatile("nop"::);
+		__NOP();
 	}
 
 	// Drop WR to tell the FT245 to read the data.
@@ -143,7 +143,7 @@ uint8_t FT245RL_read_data() {
 	// Wait for the FT245 to respond with data.
 	uint8_t i = NOP_COUNT_READ;
 	for (; i > 0; i--) {
-		asm volatile("nop"::);
+		__NOP();
 	}
 
 	// Read the data from the data port.
@@ -155,8 +155,8 @@ uint8_t FT245RL_read_data() {
 	data |= ((in_gpio_a & (GPIO_PIN_14)) ?  8 : 0);
 	data |= ((in_gpio_a & (GPIO_PIN_15)) ? 16 : 0);
 
-	data |= ((in_gpio_b & (GPIO_PIN_7)) ? 1 : 0);
-	data |= ((in_gpio_b & (GPIO_PIN_6)) ? 2 : 0);
+	data |= ((in_gpio_b & (GPIO_PIN_9)) ? 1 : 0);
+	data |= ((in_gpio_b & (GPIO_PIN_8)) ? 2 : 0);
 	data |= ((in_gpio_b & (GPIO_PIN_4)) ? 32 : 0);
 	data |= ((in_gpio_b & (GPIO_PIN_5)) ? 64 : 0);
 	data |= ((in_gpio_b & (GPIO_PIN_3)) ? 128 : 0);
@@ -170,13 +170,13 @@ uint8_t FT245RL_read_data() {
 /**
  * Read RXF#
  */
-bool FT245RL_data_available(void) {
+bool FT245RL_data_available() {
 	return gpio_input_bit_get(GPIOA, GPIO_PIN_11) == RESET;
 }
 
 /**
  * Read TXE#
  */
-bool FT245RL_can_write(void) {
+bool FT245RL_can_write() {
 	return gpio_input_bit_get(GPIOA, GPIO_PIN_13) == RESET;
 }
