@@ -104,6 +104,8 @@ clean: $(LIBDEP)
 	rm -f $(TARGET)
 	rm -f $(MAP)
 	rm -f $(LIST)
+	rm -f $(SIZE)
+	rm -f include/sofware_version_id.h
 
 #
 # Libraries
