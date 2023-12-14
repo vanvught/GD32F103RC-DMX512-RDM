@@ -48,7 +48,7 @@ struct WidgetParamsMask {
 #if defined (WIDGET_HAVE_FLASHROM)
 class WidgetParamsStore {
 public:
-	virtual ~WidgetParamsStore() {}
+	virtual ~WidgetParamsStore() = default;
 
 	virtual void Update(const struct TWidgetParams *pWidgetParams)=0;
 	virtual void Copy(struct TWidgetParams *pWidgetParams)=0;
