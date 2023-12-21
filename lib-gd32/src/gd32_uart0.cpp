@@ -1,9 +1,8 @@
-#if (defined (H3) || defined (GD32)) && defined (RDM_CONTROLLER)
 /**
- * @file storewidget.cpp
+ * @file gd32_uart0.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +23,43 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cassert>
+#include <cstdarg>
+#include <cstdio>
 
-#include "storewidget.h"
+static char s_buffer[128];
 
-#include "debug.h"
+extern "C" {
+void uart0_putc(int);
 
-StoreWidget *StoreWidget::s_pThis = nullptr;
+void uart0_puts(const char *s) {
+	while (*s != '\0') {
+		if (*s == '\n') {
+			uart0_putc('\r');
+		}
+		uart0_putc(*s++);
+	}
 
-StoreWidget::StoreWidget() {
-	DEBUG_ENTRY
-
-	assert(s_pThis == nullptr);
-	s_pThis = this;
-
-	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
-	DEBUG_EXIT
+//	uart0_putc('\n'); //TODO Add '\n'
 }
-#endif
+
+int uart0_printf(const char *fmt, ...) {
+	va_list arp;
+
+	va_start(arp, fmt);
+
+	int i = vsnprintf(s_buffer, sizeof(s_buffer) - 1, fmt, arp);
+
+	va_end(arp);
+
+	char *s = s_buffer;
+
+	while (*s != '\0') {
+		if (*s == '\n') {
+			uart0_putc('\r');
+		}
+		uart0_putc(*s++);
+	}
+
+	return i;
+}
+}

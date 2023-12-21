@@ -1,7 +1,8 @@
 /**
- * @file widgetstore.h
+ * @file  systick.c
+ *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,18 +23,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_WIDGETSTORE_H_
-#define H3_WIDGETSTORE_H_
-
 #include <cstdint>
 
-class WidgetStore {
-public:
-	virtual ~WidgetStore() = default;
+#include "gd32.h"
 
-	virtual void UpdateBreakTime(uint8_t nBreakTime)=0;
-	virtual void UpdateMabTime(uint8_t nMabTime)=0;
-	virtual void UpdateRefreshRate(uint8_t nRefreshRate)=0;
-};
+volatile uint32_t s_nSysTickMillis;
 
-#endif /* H3_WIDGETSTORE_H_ */
+extern "C" {
+void systick_config(void) {
+	/* setup systick timer for 1000Hz interrupts */
+	if (SysTick_Config(SystemCoreClock / 1000U)) {
+		/* capture error */
+		while (1) {
+		}
+	}
+	/* configure the systick handler priority */
+	NVIC_SetPriority(SysTick_IRQn, 0x00U);
+}
+
+void SysTick_Handler(void) {
+	s_nSysTickMillis++;
+}
+}

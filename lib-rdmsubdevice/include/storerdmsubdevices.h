@@ -1,8 +1,8 @@
 /**
- * @file  systick.c
+ * @file storerdmsubdevices.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,36 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef STORERDMSUBDEVICES_H_
+#define STORERDMSUBDEVICES_H_
 
-#include "gd32.h"
+#include "rdmsubdevicesparams.h"
 
-volatile uint32_t s_nSysTickMillis;
+#include "configstore.h"
 
-void systick_config(void) {
-	/* setup systick timer for 1000Hz interrupts */
-	if (SysTick_Config(SystemCoreClock / 1000U)) {
-		/* capture error */
-		while (1) {
-		}
+class StoreRDMSubDevices {
+public:
+	static StoreRDMSubDevices& Get() {
+		static StoreRDMSubDevices instance;
+		return instance;
 	}
-	/* configure the systick handler priority */
-	NVIC_SetPriority(SysTick_IRQn, 0x00U);
-}
 
-void SysTick_Handler(void) {
-	s_nSysTickMillis++;
-}
+	static void Update(const rdm::subdevicesparams::Params *pParams) {
+		Get().IUpdate(pParams);
+	}
+
+	static void Copy(rdm::subdevicesparams::Params *pParams) {
+		Get().ICopy(pParams);
+	}
+
+private:
+	void IUpdate(const rdm::subdevicesparams::Params *pParams)  {
+		ConfigStore::Get()->Update(configstore::Store::RDMSUBDEVICES, pParams, sizeof(struct rdm::subdevicesparams::Params));
+	}
+
+	void ICopy(rdm::subdevicesparams::Params *pParams) {
+		ConfigStore::Get()->Copy(configstore::Store::RDMSUBDEVICES, pParams, sizeof(struct rdm::subdevicesparams::Params));
+	}
+};
+
+#endif /* STORERDMSUBDEVICES_H_ */

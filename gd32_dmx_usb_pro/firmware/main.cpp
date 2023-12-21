@@ -32,7 +32,6 @@
 
 #include "widget.h"
 #include "widgetparams.h"
-#include "widgetstore.h"
 #include "rdmdeviceparams.h"
 
 #include "configstore.h"
@@ -58,23 +57,19 @@ void main() {
 	Widget widget;
 	widget.SetPortDirection(0, dmx::PortDirection::INP, false);
 
-	StoreWidget storeWidget;
-	WidgetParams widgetParams(&storeWidget);
+	WidgetParams widgetParams;
 
-	if (widgetParams.Load()) {
-		widgetParams.Dump();
-		widgetParams.Set();
-	}
-
-	StoreRDMDevice storeRDMDevice;
-	RDMDeviceParams rdmDeviceParams(&storeRDMDevice);
+	widgetParams.Load();
+	widgetParams.Dump();
+	widgetParams.Set();
 
 	widget.SetLabel(&deviceLabel);
 
-	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Dump();
-		rdmDeviceParams.Set(&widget);
-	}
+	RDMDeviceParams rdmDeviceParams;
+
+	rdmDeviceParams.Load();
+	rdmDeviceParams.Dump();
+	rdmDeviceParams.Set(&widget);
 
 	widget.Init();
 

@@ -2,7 +2,7 @@
  * @file widgetparams.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,24 +45,9 @@ struct WidgetParamsMask {
 	static constexpr auto THROTTLE = (1U << 4);
 };
 
-#if defined (WIDGET_HAVE_FLASHROM)
-class WidgetParamsStore {
-public:
-	virtual ~WidgetParamsStore() = default;
-
-	virtual void Update(const struct TWidgetParams *pWidgetParams)=0;
-	virtual void Copy(struct TWidgetParams *pWidgetParams)=0;
-};
-#else
-#endif
-
 class WidgetParams {
 public:
-#if defined (WIDGET_HAVE_FLASHROM)
-	WidgetParams(WidgetParamsStore *pWidgetParamsStore = nullptr);
-#else
 	WidgetParams();
-#endif
 
 	bool Load();
 	void Set();
@@ -99,9 +84,6 @@ private:
     }
 
 private:
-#if defined (WIDGET_HAVE_FLASHROM)
-    WidgetParamsStore *m_pWidgetParamsStore;
-#endif
     TWidgetParams m_tWidgetParams;
 };
 
