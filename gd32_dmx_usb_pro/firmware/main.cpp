@@ -60,7 +60,6 @@ void main() {
 	WidgetParams widgetParams;
 
 	widgetParams.Load();
-	widgetParams.Dump();
 	widgetParams.Set();
 
 	widget.SetLabel(&deviceLabel);
@@ -68,7 +67,6 @@ void main() {
 	RDMDeviceParams rdmDeviceParams;
 
 	rdmDeviceParams.Load();
-	rdmDeviceParams.Dump();
 	rdmDeviceParams.Set(&widget);
 
 	widget.Init();
