@@ -37,7 +37,6 @@
 #include "configstore.h"
 
 #include "storewidget.h"
-#include "storerdmdevice.h"
 
 #include "software_version.h"
 
