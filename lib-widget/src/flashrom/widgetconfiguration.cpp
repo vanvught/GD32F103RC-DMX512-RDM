@@ -23,10 +23,11 @@
  * THE SOFTWARE.
  */
 
+#include <cstdint>
 #include <cassert>
 
 #include "widgetconfiguration.h"
-#include "storewidget.h"
+#include "widgetstore.h"
 
 #include "dmx.h"
 
@@ -34,18 +35,18 @@ void WidgetConfiguration::Store(const struct TWidgetConfiguration *widget_params
 	if (widget_params->nBreakTime != s_nBreakTime) {
 		s_nBreakTime = widget_params->nBreakTime;
 		Dmx::Get()->SetDmxBreakTime(static_cast<uint32_t>(s_nBreakTime * 10.67));
-		StoreWidget::UpdateBreakTime(widget_params->nBreakTime);
+		WidgetStore::UpdateBreakTime(widget_params->nBreakTime);
 	}
 
 	if (widget_params->nMabTime != s_nMabTime) {
 		s_nMabTime = widget_params->nMabTime;
 		Dmx::Get()->SetDmxMabTime(static_cast<uint32_t>(s_nMabTime * 10.67));
-		StoreWidget::UpdateMabTime(widget_params->nMabTime);
+		WidgetStore::UpdateMabTime(widget_params->nMabTime);
 	}
 
 	if (widget_params->nRefreshRate != s_nRefreshRate) {
 		s_nRefreshRate = widget_params->nRefreshRate;
 		Dmx::Get()->SetDmxPeriodTime(widget_params->nRefreshRate == 0 ? 0 : (1000000U / widget_params->nRefreshRate));
-		StoreWidget::UpdateRefreshRate(widget_params->nRefreshRate);
+		WidgetStore::UpdateRefreshRate(widget_params->nRefreshRate);
 	}
 }

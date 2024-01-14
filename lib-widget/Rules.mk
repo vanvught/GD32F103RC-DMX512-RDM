@@ -3,4 +3,4 @@ DEFINES+=NO_HDMI_OUTPUT
 
 EXTRA_SRCDIR+=src/flashrom src/nohdmi
 
-EXTRA_INCLUDES+=../lib-configstore/include ../lib-flashcode/include ../lib-dmx/include ../lib-rdm/include ../lib-usb/include ../lib-properties/include
+EXTRA_INCLUDES+=../lib-flashcode/include ../lib-dmx/include ../lib-rdm/include ../lib-usb/include ../lib-properties/include

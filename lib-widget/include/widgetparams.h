@@ -45,6 +45,23 @@ struct WidgetParamsMask {
 	static constexpr auto THROTTLE = (1U << 4);
 };
 
+class WidgetParamsStore {
+public:
+#if defined (WIDGET_HAVE_FLASHROM)
+	static void Update(const struct TWidgetParams* pParams) {
+		ConfigStore::Get()->Update(configstore::Store::WIDGET, pParams, sizeof(struct TWidgetParams));
+	}
+
+	static void Copy(struct TWidgetParams* pParams) {
+		ConfigStore::Get()->Copy(configstore::Store::WIDGET, pParams, sizeof(struct TWidgetParams));
+	}
+#else
+	static void IUpdate(const struct TWidgetParams* pParams) { }
+
+	static void ICopy(struct TWidgetParams* pParams) { }
+#endif
+};
+
 class WidgetParams {
 public:
 	WidgetParams();

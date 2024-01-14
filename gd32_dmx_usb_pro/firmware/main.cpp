@@ -36,8 +36,6 @@
 
 #include "configstore.h"
 
-#include "storewidget.h"
-
 #include "software_version.h"
 
 #ifndef ALIGNED

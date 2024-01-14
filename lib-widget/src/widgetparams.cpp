@@ -38,8 +38,6 @@
 
 #include "dmx.h"
 
-#include "storewidget.h"
-
 #include "readconfigfile.h"
 #include "sscan.h"
 
@@ -65,10 +63,10 @@ void WidgetParams::Load() {
 #if defined (WIDGET_HAVE_FLASHROM)
 # if !defined(DISABLE_FS)
 	if (configfile.Read( WidgetParamsConst::FILE_NAME)) {
-		StoreWidget::Update(&m_Params);
+		WidgetParamsStore::Update(&m_Params);
 	} else
 # endif
-	StoreWidget::Copy(&m_Params);
+		WidgetParamsStore::Copy(&m_Params);
 #else
 	configfile.Read(WidgetParamsConst::FILE_NAME);
 #endif

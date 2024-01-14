@@ -1,8 +1,8 @@
 /**
- * @file storerdmsensors.h
+ * @file rdmsensorsstore.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef STORERDMSENSORS_H_
-#define STORERDMSENSORS_H_
+#ifndef RDMSENSORSSTORE_H_
+#define RDMSENSORSSTORE_H_
 
 #include <cstdint>
 #include <cstddef>
@@ -32,42 +32,15 @@
 
 #include "rdmsensorsparams.h"
 #include "rdmsensors.h"
-
 #include "configstore.h"
 
-class StoreRDMSensors {
+class RDMSensorsStore {
 public:
-	static StoreRDMSensors& Get() {
-		static StoreRDMSensors instance;
-		return instance;
-	}
-
-	static void Update(const rdm::sensorsparams::Params *pParams) {
-		Get().IUpdate(pParams);
-	}
-
-	static void Copy(rdm::sensorsparams::Params *pParams) {
-		Get().ICopy(pParams);
-	}
-
 	static void SaveCalibration(const uint32_t nSensor, const int32_t nCalibration) {
-		Get().ISaveCalibration(nSensor, nCalibration);
-	}
-
-private:
-	void IUpdate(const rdm::sensorsparams::Params *pParams) {
-		ConfigStore::Get()->Update(configstore::Store::RDMSENSORS, pParams, sizeof(struct rdm::sensorsparams::Params));
-	}
-
-	void ICopy(rdm::sensorsparams::Params *pParams) {
-		ConfigStore::Get()->Copy(configstore::Store::RDMSENSORS, pParams, sizeof(struct rdm::sensorsparams::Params));
-	}
-
-	void ISaveCalibration(const uint32_t nSensor, const int32_t nCalibration) {
 		assert(nSensor < rdm::sensors::MAX);
 		auto c = static_cast<int16_t>(nCalibration);
 		ConfigStore::Get()->Update(configstore::Store::RDMSENSORS, (nSensor * sizeof(int16_t)) + offsetof(struct rdm::sensorsparams::Params, nCalibrate), &c, sizeof(int16_t));
 	}
 };
 
-#endif /* STORERDMSENSORS_H_ */
+#endif /* RDMSENSORSSTORE_H_ */

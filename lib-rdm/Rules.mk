@@ -1,5 +1,5 @@
 EXTRA_INCLUDES=../lib-rdmsensor/include ../lib-rdmsubdevice/include ../lib-dmx/include ../lib-properties/include ../lib-lightset/include
-EXTRA_INCLUDES+=../lib-hal/include ../lib-network/include ../lib-display/include ../lib-configstore/include
+EXTRA_INCLUDES+=../lib-network/include ../lib-display/include
 
 ifneq ($(MAKE_FLAGS),)
 	ifeq (,$(findstring NODE_ARTNET,$(MAKE_FLAGS)))
@@ -31,6 +31,6 @@ else
 		EXTRA_SRCDIR+=src/responder
 	endif
 	DEFINES+=ENABLE_RDM_SUBDEVICES CONFIG_RDM_SUBDEVICES_USE_I2C CONFIG_RDM_SUBDEVICES_USE_SPI
-	DEFINES+=ENABLE_RDM_MANUFACTURER_PIDS
+	DEFINES+=ENABLE_RDM_MANUFACTURER_PIDS CONFIG_RDM_MANUFACTURER_PIDS_SET
 	DEFINES+=RDM_RESPONDER
 endif
