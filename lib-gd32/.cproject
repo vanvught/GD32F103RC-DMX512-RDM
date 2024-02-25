@@ -33,7 +33,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.43279526" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="BARE_METAL"/>
 									<listOptionValue builtIn="false" value="GD32"/>
 									<listOptionValue builtIn="false" value="BOARD_GD32F103RC"/>
 									<listOptionValue builtIn="false" value="GD32F10X_HD"/>
