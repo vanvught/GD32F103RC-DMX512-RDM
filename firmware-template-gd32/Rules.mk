@@ -10,15 +10,12 @@ AR	 = $(PREFIX)ar
 
 BOARD?=BOARD_GD32F103RC
 
-# Output
 TARGET=$(FAMILY).bin
 LIST=$(FAMILY).list
 MAP=$(FAMILY).map
 SIZE=$(FAMILY).size
 BUILD=build_gd32/
 
-# Input
-SOURCE=./
 FIRMWARE_DIR=./../firmware-template-gd32/
 
 DEFINES:=$(addprefix -D,$(DEFINES))
@@ -29,8 +26,6 @@ include ../firmware-template/libs.mk
 include ../firmware-template-gd32/Includes.mk
 
 LIBS+=c++ c gd32
-
-include ../firmware-template-gd32/Includes.mk
 
 # The variable for the libraries include directory
 LIBINCDIRS:=$(addprefix -I../lib-,$(LIBS))
@@ -45,11 +40,6 @@ LDLIBS:=$(addprefix -l,$(LIBS))
 
 # The variables for the dependency check
 LIBDEP=$(addprefix ../lib-,$(LIBS))
-
-$(info $$BOARD [${BOARD}])
-$(info $$DEFINES [${DEFINES}])
-$(info $$LIBS [${LIBS}])
-$(info $$LIBDEP [${LIBDEP}])
 
 COPS=-DGD32 -D$(FAMILY_UCA) -D$(LINE_UC) -D$(MCU) -D$(BOARD)
 COPS+=$(strip $(DEFINES) $(MAKE_FLAGS) $(INCLUDES) $(LIBINCDIRS))
@@ -81,13 +71,13 @@ BUILD_DIRS:=$(addprefix $(BUILD),$(SRCDIR))
 OBJECTS:=$(ASM_OBJECTS) $(C_OBJECTS)
 
 define compile-objects
-$(BUILD)$1/%.o: $(SOURCE)$1/%.cpp
+$(BUILD)$1/%.o: $1/%.cpp
 	$(CPP) $(COPS) $(CPPOPS) -c $$< -o $$@
 
-$(BUILD)$1/%.o: $(SOURCE)$1/%.c
+$(BUILD)$1/%.o: $1/%.c
 	$(CC) $(COPS) -c $$< -o $$@
 
-$(BUILD)$1/%.o: $(SOURCE)$1/%.S
+$(BUILD)$1/%.o: $1/%.S
 	$(CC) $(COPS) -D__ASSEMBLY__ -c $$< -o $$@
 endef
 
