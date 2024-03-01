@@ -33,7 +33,6 @@
 
 #include "sscan.h"
 
-//#include "../lib-hal/ff12c/ff.h"
 #include "../ff14b/source/ff.h"
 
 #include "dmx.h"
