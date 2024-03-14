@@ -77,8 +77,12 @@ Hardware::Hardware() {
 	gd32_i2c_begin();
 
 	rcu_periph_clock_enable(RCU_TIMER5);
+
 	timer_deinit(TIMER5);
+
 	timer_parameter_struct timer_initpara;
+	timer_struct_para_init(&timer_initpara);
+
 	timer_initpara.prescaler = TIMER_PSC_1MHZ;
 	timer_initpara.period = static_cast<uint32_t>(~0);
 	timer_init(TIMER5, &timer_initpara);
@@ -100,7 +104,7 @@ Hardware::Hardware() {
 	assert(nAHB == AHB_CLOCK_FREQ);
 	assert(nAPB1 == APB1_CLOCK_FREQ);
 	assert(nAPB2 == APB2_CLOCK_FREQ);
-# if defined (CK_APB4)
+# if defined (GD32H7XX)
 	const auto nAPB3 = rcu_clock_freq_get(CK_APB3);
 	const auto nAPB4 = rcu_clock_freq_get(CK_APB4);
 	printf("nCK_APB3=%u\nCK_APB4=%u\n", nAPB3, nAPB4);
@@ -196,7 +200,7 @@ Hardware::Hardware() {
 	gpio_mode_set(LED_BLINK_GPIO_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LED_BLINK_PIN);
 	gpio_output_options_set(LED_BLINK_GPIO_PORT, GPIO_OTYPE_PP, GPIO_OSPEED, LED_BLINK_PIN);
 # endif
-	GPIO_BC(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
+	GPIO_BOP(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
 #endif
 
 #if defined (PANELLED_595_CS_GPIOx)

@@ -1,8 +1,8 @@
 /**
- * @file gd32_uart0.cpp
+ * @file json_get_ports.cpp
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,31 +26,33 @@
 #include <cstdint>
 #include <cstdio>
 
-#include "gd32.h"
-#include "gd32_uart.h"
+#include "dmx.h"
+#include "dmxconst.h"
+#include "lightset.h"
 
-extern "C" {
-void uart0_init(void) {
-	gd32_uart_begin(USART0, 115200U, GD32_UART_BITS_8, GD32_UART_PARITY_NONE, GD32_UART_STOP_1BIT);
+namespace remoteconfig {
+namespace dmx {
+static uint32_t get_portstatus(const uint32_t nPortIndex, char *pOutBuffer, const uint32_t nOutBufferSize) {
+	const auto direction = Dmx::Get()->GetPortDirection(nPortIndex) == ::dmx::PortDirection::INP ? ::lightset::PortDir::INPUT : ::lightset::PortDir::OUTPUT;
+	auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
+			"{\"port\":\"%c\",\"direction\":\"%s\"},",
+			'A' + nPortIndex,
+			lightset::get_direction(direction)));
+
+	return nLength;
 }
 
-void uart0_putc(int c) {
-	if (c == '\n') {
-		while (RESET == usart_flag_get(USART0, USART_FLAG_TBE))
-			;
-#if defined (GD32H7XX)
-		USART_TDATA(USART0) = USART_TDATA_TDATA & (uint32_t)'\r';
-#else
-		USART_DATA(USART0) = ((uint16_t) USART_DATA_DATA & (uint8_t) '\r');
-#endif
+uint32_t json_get_ports(char *pOutBuffer, const uint32_t nOutBufferSize) {
+	pOutBuffer[0] = '[';
+	uint32_t nLength = 1;
+
+	for (uint32_t nPortIndex = 0; nPortIndex < ::dmx::config::max::PORTS; nPortIndex++) {
+		nLength += get_portstatus(nPortIndex, &pOutBuffer[nLength], nOutBufferSize - nLength);
 	}
 
-	while (RESET == usart_flag_get(USART0, USART_FLAG_TBE))
-		;
-#if defined (GD32H7XX)
-	USART_TDATA(USART0) = USART_TDATA_TDATA & (uint32_t) c;
-#else
-	USART_DATA(USART0) = ((uint16_t) USART_DATA_DATA & (uint8_t) c);
-#endif
+	pOutBuffer[nLength - 1] = ']';
+
+	return nLength;
 }
-}
+}  // namespace dmx
+}  // namespace remoteconfig

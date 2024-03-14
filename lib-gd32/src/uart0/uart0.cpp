@@ -1,8 +1,8 @@
 /**
- * @file dmxstartaddressupdate.cpp
+ * @file uart0.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,33 @@
  */
 
 #include <cstdint>
+#include <cstdio>
 
-#include "rdmresponder.h"
+#include "gd32.h"
+#include "gd32_uart.h"
 
-#include "displayudf.h"
+extern "C" {
+void uart0_init(void) {
+	gd32_uart_begin(USART0, 115200U, GD32_UART_BITS_8, GD32_UART_PARITY_NONE, GD32_UART_STOP_1BIT);
+}
 
-#include "debug.h"
+void uart0_putc(int c) {
+	if (c == '\n') {
+		while (RESET == usart_flag_get(USART0, USART_FLAG_TBE))
+			;
+#if defined (GD32H7XX)
+		USART_TDATA(USART0) = USART_TDATA_TDATA & (uint32_t)'\r';
+#else
+		USART_DATA(USART0) = ((uint16_t) USART_DATA_DATA & (uint8_t) '\r');
+#endif
+	}
 
-void RDMResponder::DmxStartAddressUpdate([[maybe_unused]] uint16_t nDmxStartAddress) {
-	DisplayUdf::Get()->Show();
+	while (RESET == usart_flag_get(USART0, USART_FLAG_TBE))
+		;
+#if defined (GD32H7XX)
+	USART_TDATA(USART0) = USART_TDATA_TDATA & (uint32_t) c;
+#else
+	USART_DATA(USART0) = ((uint16_t) USART_DATA_DATA & (uint8_t) c);
+#endif
+}
 }

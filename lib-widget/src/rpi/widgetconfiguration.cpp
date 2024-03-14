@@ -138,7 +138,7 @@ void WidgetConfiguration::UpdateConfigFile() {
 
 		if (rc_rd == FR_OK) {
 			for (;;) {
-				if (f_gets(buffer, (int) sizeof(buffer), &file_object_rd) == NULL) {
+				if (f_gets(buffer, (int) sizeof(buffer), &file_object_rd) == nullptr) {
 					break; // Error or end of file
 				}
 				ProcessLineUpdate((const char *) buffer, &file_object_wr);
