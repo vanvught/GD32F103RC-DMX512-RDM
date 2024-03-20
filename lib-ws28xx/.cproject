@@ -38,8 +38,7 @@
 									<listOptionValue builtIn="false" value="DISABLE_FS"/>
 									<listOptionValue builtIn="false" value="DISABLE_TFTP"/>
 									<listOptionValue builtIn="false" value="H3"/>
-									<listOptionValue builtIn="false" value="USE_SPI_DMA"/>
-								</option>
+									</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1593309472" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.160362454" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
@@ -61,7 +60,6 @@
 									<listOptionValue builtIn="false" value="BOARD_GD32F103RC"/>
 									<listOptionValue builtIn="false" value="DISABLE_FS"/>
 									<listOptionValue builtIn="false" value="DISABLE_TFTP"/>
-									<listOptionValue builtIn="false" value="USE_SPI_DMA"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.768408636" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
