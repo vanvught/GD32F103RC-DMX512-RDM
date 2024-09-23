@@ -2,7 +2,7 @@
  * @file ft245rl.h
  *
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,23 +26,14 @@
 #ifndef FT245RL_H_
 #define FT245RL_H_
 
-#include <stdint.h>
-#include <stdbool.h>
+#include <cstdint>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+void FT245RL_init();
 
-extern void FT245RL_init(void);
+bool FT245RL_data_available();
+uint8_t FT245RL_read_data();
 
-extern bool FT245RL_data_available(void);
-extern uint8_t FT245RL_read_data();
-
-extern bool FT245RL_can_write(void);
-extern void FT245RL_write_data(uint8_t);
-
-#ifdef __cplusplus
-}
-#endif
+bool FT245RL_can_write();
+void FT245RL_write_data(uint8_t);
 
 #endif /* FT245RL_H_ */

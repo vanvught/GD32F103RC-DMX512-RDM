@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,13 +32,9 @@
 
 #include "widget.h"
 #include "widgetparams.h"
-#include "widgetstore.h"
 #include "rdmdeviceparams.h"
 
 #include "configstore.h"
-
-#include "storewidget.h"
-#include "storerdmdevice.h"
 
 #include "software_version.h"
 
@@ -49,7 +45,7 @@
 static constexpr char widget_mode_names[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM" , "RDM_SNIFFER" };
 static constexpr TRDMDeviceInfoData deviceLabel ALIGNED = { const_cast<char*>("GD32F103RC DMX USB Pro"), 22 };
 
-void main() {
+int main() {
 	Hardware hw;
 	Display display; // Not supported, yet.
 	ConfigStore configStore;
@@ -58,23 +54,17 @@ void main() {
 	Widget widget;
 	widget.SetPortDirection(0, dmx::PortDirection::INP, false);
 
-	StoreWidget storeWidget;
-	WidgetParams widgetParams(&storeWidget);
+	WidgetParams widgetParams;
 
-	if (widgetParams.Load()) {
-		widgetParams.Dump();
-		widgetParams.Set();
-	}
-
-	StoreRDMDevice storeRDMDevice;
-	RDMDeviceParams rdmDeviceParams(&storeRDMDevice);
+	widgetParams.Load();
+	widgetParams.Set();
 
 	widget.SetLabel(&deviceLabel);
 
-	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Dump();
-		rdmDeviceParams.Set(&widget);
-	}
+	RDMDeviceParams rdmDeviceParams;
+
+	rdmDeviceParams.Load();
+	rdmDeviceParams.Set(&widget);
 
 	widget.Init();
 

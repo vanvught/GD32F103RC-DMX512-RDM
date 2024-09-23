@@ -1,9 +1,8 @@
-DEFINES=USE_SPI_DMA
-DEFINES+=NDEBUG
+DEFINES=NDEBUG
 
 EXTRA_INCLUDES=
 
-EXTRA_SRCDIR=src/dmx
+EXTRA_SRCDIR=
 
 include Rules.mk
 include ../firmware-template-gd32/lib/Rules.mk

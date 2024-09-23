@@ -9,36 +9,34 @@ AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
-FAMILY?=gd32f10x
-MCU?=GD32F103RC
 BOARD?=BOARD_GD32F103RC
 
-FAMILY:=$(shell echo $(FAMILY) | tr A-Z a-z)
-FAMILY_UC=$(shell echo $(FAMILY) | tr a-w A-W)
-
-$(info $$FAMILY [${FAMILY}])
-$(info $$FAMILY_UC [${FAMILY_UC}])
 $(info $$BOARD [${BOARD}])
-$(info $$ENET_PHY [${ENET_PHY}])
 
 SRCDIR=src src/gd32 $(EXTRA_SRCDIR)
 
-include ../firmware-template-gd32/Includes.mk
-
 DEFINES:=$(addprefix -D,$(DEFINES))
 DEFINES+=-D_TIME_STAMP_YEAR_=$(shell date  +"%Y") -D_TIME_STAMP_MONTH_=$(shell date  +"%-m") -D_TIME_STAMP_DAY_=$(shell date  +"%-d")
-DEFINES+=-DCONFIG_STORE_USE_ROM
 
-COPS=-DBARE_METAL -DGD32 -DGD32F10X_HD -D$(MCU) -D$(BOARD)
-COPS+=$(DEFINES) $(MAKE_FLAGS) $(INCLUDES)
-COPS+=-Os -mcpu=cortex-m3 -mthumb
-COPS+=-nostartfiles -ffreestanding -nostdlib
+include ../firmware-template-gd32/Board.mk
+include ../firmware-template-gd32/Mcu.mk
+include ../firmware-template-gd32/Includes.mk
+include ../firmware-template-gd32/Validate.mk
+
+INCLUDES+=-I../lib-configstore/include -I../lib-device/include -I../lib-display/include -I../lib-flash/include -I../lib-flashcode/include -I../lib-hal/include -I../lib-lightset/include -I../lib-network/include
+
+$(info $$DEFINES [${DEFINES}])
+$(info $$MAKE_FLAGS [${MAKE_FLAGS}])
+
+COPS=-DGD32 -D$(FAMILY_UCA) -D$(LINE_UC) -D$(MCU) -D$(BOARD)
+COPS+=$(strip $(DEFINES)) $(MAKE_FLAGS) $(INCLUDES)
+COPS+=$(strip $(ARMOPS) $(CMSISOPS))
+COPS+=-Os -nostartfiles -ffreestanding -nostdlib
 COPS+=-fstack-usage
 COPS+=-ffunction-sections -fdata-sections
-COPS+=-Wall -Werror -Wpedantic -Wextra -Wunused -Wsign-conversion -Wconversion
-COPS+=-Wduplicated-cond -Wlogical-op
+COPS+=-Wall -Werror -Wpedantic -Wextra -Wunused -Wsign-conversion -Wconversion -Wduplicated-cond -Wlogical-op
 
-CPPOPS=-std=c++11
+CPPOPS=-std=c++20
 CPPOPS+=-Wnon-virtual-dtor -Woverloaded-virtual -Wnull-dereference -fno-rtti -fno-exceptions -fno-unwind-tables
 CPPOPS+=-Wuseless-cast -Wold-style-cast
 CPPOPS+=-fno-threadsafe-statics
@@ -54,22 +52,29 @@ C_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(
 CPP_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
 ASM_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.S,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.S)))
 
-OBJECTS:=$(ASM_OBJECTS) $(C_OBJECTS) $(CPP_OBJECTS)
+EXTRA_C_OBJECTS=$(patsubst %.c,$(BUILD)%.o,$(EXTRA_C_SOURCE_FILES))
+EXTRA_C_DIRECTORIES=$(shell dirname $(EXTRA_C_SOURCE_FILES))
+EXTRA_BUILD_DIRS:=$(addsuffix $(EXTRA_C_DIRECTORIES), $(BUILD))
 
-TARGET=lib_gd32/lib$(LIB_NAME).a 
+OBJECTS:=$(strip $(ASM_OBJECTS) $(C_OBJECTS) $(CPP_OBJECTS) $(EXTRA_C_OBJECTS))
+
+$(info $$OBJECTS [${OBJECTS}])
+
+TARGET=lib_gd32/lib$(LIB_NAME).a
 $(info $$TARGET [${TARGET}])
 
-LIST = lib.list
+LIST=lib.list
 
 define compile-objects
+$(info $1)
 $(BUILD)$1/%.o: $1/%.c
 	$(CC) $(COPS) -c $$< -o $$@
 	
 $(BUILD)$1/%.o: $1/%.cpp
-	$(CPP) $(COPS) $(CPPOPS)  -c $$< -o $$@
+	$(CPP) $(COPS) $(CPPOPS) -c $$< -o $$@
 	
 $(BUILD)$1/%.o: $1/%.S
-	$(CC) $(COPS) -D__ASSEMBLY__ -c $$< -o $$@	
+	$(CC) $(COPS) -D__ASSEMBLY__ -c $$< -o $$@
 endef
 
 all : builddirs $(TARGET)
@@ -78,6 +83,7 @@ all : builddirs $(TARGET)
 
 builddirs:
 	mkdir -p $(BUILD_DIRS)
+	mkdir -p $(EXTRA_BUILD_DIRS)
 	mkdir -p lib_gd32
 
 clean:

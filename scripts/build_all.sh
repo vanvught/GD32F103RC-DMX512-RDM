@@ -1,25 +1,14 @@
 #!/bin/bash
-NPROC=1
-
-if [ "$(uname)" == "Darwin" ]; then
-     NPROC=$(sysctl -a | grep machdep.cpu.core_count | cut -d ':' -f 2)     
-elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-     NPROC=$(nproc)
-fi
-
-cd ../Board-tester
-make -f Makefile.GD32 clean
-make -f Makefile.GD32 -j $NPROC
-retVal=$?
-if [ $retVal -ne 0 ]; then
- 	echo "Error : " "$f"
-	exit $retVal
-fi
-cp gd32f10x.bin /tmp/Board-tester.bin
-cd -
 cd ..
 
 DIR=gd32_*
+MAKEFILE=Makefile*.GD32
+
+for f in $DIR
+do
+	rm -rf /tmp/$f
+	mkdir /tmp/$f
+done
 
 for f in $DIR
 do
@@ -27,15 +16,37 @@ do
 	if [ -d $f ]; then
 		cd "$f"
 		
-		make -f Makefile.GD32 clean
-		make -f Makefile.GD32 -j $NPROC
-		retVal=$?
-		if [ $retVal -ne 0 ]; then
-		 	echo "Error : " "$f"
-			exit $retVal
-		fi
-
-		cp gd32f10x.bin /tmp/$f.bin
+			for m in $MAKEFILE
+			do
+				make -f $m -j clean
+				make -f $m
+				retVal=$?
+				
+				if [ $retVal -ne 0 ]; then
+				 	echo "Error : " "$f" " : " "$m"
+					exit $retVal
+				fi
+				
+				SUFFIX1=$(echo $m | cut -d '-' -f 2 | cut -d '.' -f 1)
+				SUFFIX2=$(echo $m | cut -d '-' -f 3 | cut -d '.' -f 1)
+			
+				if [ $SUFFIX1 == 'Makefile' ]
+				then
+					cp gd32f10x.bin /tmp/$f/$i
+				else
+					echo "[" $SUFFIX1 "][" $SUFFIX2 "]"
+					
+					if [ -z "$SUFFIX2" ]
+					then
+						mkdir /tmp/$f/$i/$SUFFIX1/
+						cp gd32f10x.bin /tmp/$f/$i/$SUFFIX1
+					else
+						mkdir -p /tmp/$f/$i/$SUFFIX1/$SUFFIX2/
+						cp gd32f10x.bin /tmp/$f/$i/$SUFFIX1/$SUFFIX2/
+					fi
+				fi
+							
+			done
 		
 		cd -
 	fi
