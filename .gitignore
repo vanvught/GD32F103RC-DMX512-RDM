@@ -77,3 +77,6 @@ Artnet*.*
 do-tftp.sh
 udp_send
 
+*._h
+/.cache
+compile_commands.json

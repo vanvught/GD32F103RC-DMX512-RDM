@@ -1,0 +1,19 @@
+DEFINES=RDM_CONTROLLER   
+
+DEFINES+=WIDGET_HAVE_FLASHROM
+ 
+DEFINES+=NO_EMAC
+DEFINES+=NO_HDMI_OUTPUT
+
+DEFINES+=DISABLE_RTC
+DEFINES+=DISABLE_FS
+
+DEFINES+=NDEBUG
+
+LIBS=widget dmx usb
+
+SRCDIR=firmware
+
+include ../firmware-template-gd32/Rules.mk
+
+prerequisites:

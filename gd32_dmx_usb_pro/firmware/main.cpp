@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,72 +24,73 @@
  */
 
 #include <cstdio>
-#include <cstdint>
 
-#include "hardware.h"
-#include "network.h"
-#include "display.h"
-
+#include "hal.h"
+#include "gd32/hal_watchdog.h"
+#include "hal_boardinfo.h"
+#include "rdmdevice.h"
 #include "widget.h"
 #include "widgetparams.h"
-#include "rdmdeviceparams.h"
-
 #include "configstore.h"
-
 #include "software_version.h"
 
 #ifndef ALIGNED
-# define ALIGNED __attribute__ ((aligned (4)))
+#define ALIGNED __attribute__((aligned(4)))
 #endif
 
-static constexpr char widget_mode_names[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM" , "RDM_SNIFFER" };
-static constexpr TRDMDeviceInfoData deviceLabel ALIGNED = { const_cast<char*>("GD32F103RC DMX USB Pro"), 22 };
+static constexpr char kWidgetModeNames[4][12] ALIGNED = 
+{
+  "DMX_RDM", 
+  "DMX", 
+  "RDM", 
+  "RDM_SNIFFER"
+};
 
-int main() {
-	Hardware hw;
-	Display display; // Not supported, yet.
-	ConfigStore configStore;
-	Network nw;
+static constexpr rdm::DeviceInfoData kDeviceLabel ALIGNED = 
+{
+  const_cast<char*>("GD32F103RC DMX USB Pro"),
+  22
+};
 
-	Widget widget;
-	widget.SetPortDirection(0, dmx::PortDirection::INP, false);
+int main() // NOLINT
+{
+    hal::Init();
+    ConfigStore config_store;
 
-	WidgetParams widgetParams;
+    Widget widget;
+    widget.SetPortDirection(0, dmx::PortDirection::kInput, false);
 
-	widgetParams.Load();
-	widgetParams.Set();
+    WidgetParams widget_params;
+    widget_params.Load();
+    widget_params.Set();
 
-	widget.SetLabel(&deviceLabel);
+    auto& rdm_device = RdmDevice::Get();
+    rdm_device.SetLabel(&kDeviceLabel);
+    rdm_device.Init();
 
-	RDMDeviceParams rdmDeviceParams;
+    const auto* rdm_device_uid = rdm_device.GetUID();
+    struct rdm::DeviceInfoData rdm_device_label;
+    rdm_device.GetLabel(&rdm_device_label);
+    const auto kWidgetMode = widget_params.GetMode();
 
-	rdmDeviceParams.Load();
-	rdmDeviceParams.Set(&widget);
+    uint8_t hw_text_length;
+    printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hal::BoardName(hw_text_length), __DATE__, __TIME__);
+    printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d (%s)\n", kWidgetMode, kWidgetModeNames[static_cast<uint32_t>(kWidgetMode)]);
+    printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, ", rdm_device_uid[0], rdm_device_uid[1], rdm_device_uid[2], rdm_device_uid[3], rdm_device_uid[4], rdm_device_uid[5]);
+    printf("Label : %.*s\n", static_cast<int>(rdm_device_label.length), reinterpret_cast<const char*>(rdm_device_label.data));
 
-	widget.Init();
+    hal::WatchdogInit();
 
-	const auto *pRdmDeviceUid = widget.GetUID();
-	TRDMDeviceInfoData tRdmDeviceLabel;
-	widget.GetLabel(&tRdmDeviceLabel);
-	const auto widgetMode = widgetParams.GetMode();
+    if (kWidgetMode == widget::Mode::kRdmSniffer)
+    {
+        widget.SetPortDirection(0, dmx::PortDirection::kInput, true);
+        widget.SnifferFillTransmitBuffer(); // Prevent missing first frame
+    }
 
-	uint8_t nHwTextLength;
-	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
-	printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d (%s)\n", widgetMode, widget_mode_names[static_cast<uint32_t>(widgetMode)]);
-	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, ", pRdmDeviceUid[0], pRdmDeviceUid[1], pRdmDeviceUid[2], pRdmDeviceUid[3], pRdmDeviceUid[4], pRdmDeviceUid[5]);
-	printf("Label : %.*s\n", static_cast<int>(tRdmDeviceLabel.length), reinterpret_cast<const char*>(tRdmDeviceLabel.data));
-
-	hw.WatchdogInit();
-
-	if (widgetMode == widget::Mode::RDM_SNIFFER) {
-		widget.SetPortDirection(0, dmx::PortDirection::INP, true);
-		widget.SnifferFillTransmitBuffer();	// Prevent missing first frame
-	}
-
-	for (;;) {
-		hw.WatchdogFeed();
-		widget.Run();
-		configStore.Flash();
-		hw.Run();
-	}
+    for (;;)
+    {
+        hal::WatchdogFeed();
+        widget.Run();
+        hal::Run();
+    }
 }
