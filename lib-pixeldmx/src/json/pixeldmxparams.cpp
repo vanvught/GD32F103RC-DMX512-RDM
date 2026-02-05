@@ -22,6 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+ 
+ #undef NDEBUG
 
 #include <cstdint>
 #include <algorithm>
@@ -43,6 +45,8 @@
 #include "firmware/pixeldmx/show.h"
 #include "dmxnode.h"
 #include "dmxnode_nodetype.h"
+#include "pixeltestpattern.h"
+#include "firmware/debug/debug_debug.h"
 
 static constexpr uint32_t kConfigMaxPorts = CONFIG_DMXNODE_PIXEL_MAX_PORTS;
 
@@ -240,8 +244,6 @@ void PixelDmxParams::Set()
     }
 #endif
 
-    common::firmware::pixeldmx::Show(7);
-
 #ifndef NDEBUG
     pixel_dmx_configuration.Print();
     Dump();
@@ -249,6 +251,29 @@ void PixelDmxParams::Set()
     DmxNodeNodeType::Get()->Print();
 #endif
 #endif
+    const auto kTestPattern = common::FromValue<pixelpatterns::Pattern>(store_dmxled.test_pattern);
+
+    if (kTestPattern != PixelTestPattern::Get()->GetPattern())
+    {
+        const auto kIsSet = PixelTestPattern::Get()->SetPattern(kTestPattern);
+
+        if (kIsSet)
+        {
+            PixelOutputType::Get()->Blackout();
+#if defined(DMXNODE_TYPE_ARTNET) || defined(DMXNODE_TYPE_E131)
+            if (static_cast<pixelpatterns::Pattern>(kTestPattern) == pixelpatterns::Pattern::kNone)
+            {
+                DmxNodeNodeType::Get()->SetOutput(&DmxNodeOutputType::Get());
+            }
+            else
+            {
+                DmxNodeNodeType::Get()->SetOutput(nullptr);
+            }
+#endif
+        }
+    }
+
+    common::firmware::pixeldmx::Show(7, kTestPattern);
 }
 
 void PixelDmxParams::Dump()
