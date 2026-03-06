@@ -8,7 +8,7 @@ ifeq ($(FLAGS),)
 endif
 
 ifneq ($(findstring _TIME_STAMP_YEAR_,$(FLAGS)),_TIME_STAMP_YEAR_)
-	DEFINES+=-D_TIME_STAMP_YEAR_=$(shell date  +"%Y") -D_TIME_STAMP_MONTH_=$(shell date  +"%-m") -D_TIME_STAMP_DAY_=$(shell date  +"%-d")
+	include ../common/make/Timestamp.mk
 endif
 
 ifneq (,$(findstring OUTPUT_DMX_SEND,$(FLAGS))$(findstring CONFIG_RDM,$(FLAGS))$(findstring RDM_CONTROLLER,$(FLAGS))$(findstring LTC,$(FLAGS)))
@@ -40,6 +40,12 @@ ifeq ($(findstring CONFIG_REMOTECONFIG_MINIMUM,$(FLAGS)),CONFIG_REMOTECONFIG_MIN
 	DEFINES+=-DCONFIG_NET_APPS_NO_MDNS
 else
 	DEFINES+=-DCONFIG_EMAC_HASH_MULTICAST_FILTER
+endif
+
+ifeq ($(findstring RTL8201F,$(FLAGS)),RTL8201F)
+  ifneq ($(findstring RTL8201F_LED1_LINK_ALL,$(FLAGS)),RTL8201F_LED1_LINK_ALL)
+  	DEFINES+=-DRTL8201F_LED1_LINK_ALL
+  endif
 endif
 
 $(info $$DEFINES [${DEFINES}])
