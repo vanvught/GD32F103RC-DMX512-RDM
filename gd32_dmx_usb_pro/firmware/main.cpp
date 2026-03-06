@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,7 @@ static constexpr char kWidgetModeNames[4][12] ALIGNED =
   "RDM_SNIFFER"
 };
 
-static constexpr rdm::DeviceInfoData kDeviceLabel ALIGNED = 
+static constexpr rdm::device::InfoData kDeviceLabel ALIGNED = 
 {
   const_cast<char*>("GD32F103RC DMX USB Pro"),
   22
@@ -64,20 +64,19 @@ int main() // NOLINT
     widget_params.Load();
     widget_params.Set();
 
-    auto& rdm_device = RdmDevice::Get();
+    auto& rdm_device = rdm::device::Device::Instance();
     rdm_device.SetLabel(&kDeviceLabel);
-    rdm_device.Init();
 
-    const auto* rdm_device_uid = rdm_device.GetUID();
-    struct rdm::DeviceInfoData rdm_device_label;
-    rdm_device.GetLabel(&rdm_device_label);
+    const auto* uid = rdm::device::Base::Instance().GetUID();
+    struct rdm::device::InfoData label;
+    rdm_device.GetLabel(&label);
     const auto kWidgetMode = widget_params.GetMode();
 
     uint8_t hw_text_length;
     printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hal::BoardName(hw_text_length), __DATE__, __TIME__);
     printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d (%s)\n", kWidgetMode, kWidgetModeNames[static_cast<uint32_t>(kWidgetMode)]);
-    printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, ", rdm_device_uid[0], rdm_device_uid[1], rdm_device_uid[2], rdm_device_uid[3], rdm_device_uid[4], rdm_device_uid[5]);
-    printf("Label : %.*s\n", static_cast<int>(rdm_device_label.length), reinterpret_cast<const char*>(rdm_device_label.data));
+    printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, ", uid[0], uid[1], uid[2], uid[3], uid[4], uid[5]);
+    printf("Label : %.*s\n", static_cast<int>(label.length), reinterpret_cast<const char*>(label.data));
 
     hal::WatchdogInit();
 
