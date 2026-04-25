@@ -1,7 +1,7 @@
 /**
  * @file main.cpp
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,10 +47,8 @@
 #include "remoteconfig.h"
 #endif
 
-namespace hal
-{
-void RebootHandler()
-{
+namespace hal {
+void RebootHandler() {
     PixelDmx::Get().Blackout();
 }
 } // namespace hal
@@ -60,9 +58,9 @@ int main() // NOLINT
     hal::Init();
     DisplayUdf display;
     ConfigStore config_store;
-#if !defined(NO_EMAC)    
+#if !defined(NO_EMAC)
     network::Init();
-#endif    
+#endif
     FirmwareVersion fw(kSoftwareVersion, __DATE__, __TIME__);
 
     const auto kIsConfigMode = IsConfigMode();
@@ -80,13 +78,12 @@ int main() // NOLINT
     PixelTestPattern pixel_test_pattern(kTestPattern, 1);
 
     PixelDmxParamsRdm pixeldmx_paramsrdm;
-    
+
 #if defined(CONFIG_RDM_MANUFACTURER_PIDS_SET)
     static constexpr auto kPersonalityCount = static_cast<uint32_t>(pixel::LedType::kUndefined);
     RDMPersonality* personalities[kPersonalityCount];
 
-    for (uint32_t index = 0; index < kPersonalityCount; index++)
-    {
+    for (uint32_t index = 0; index < kPersonalityCount; index++) {
         const auto* description = pixel::GetTypeName(static_cast<pixel::LedType>(index));
         personalities[index] = new RDMPersonality(description, &pixeldmx);
     }
@@ -95,7 +92,7 @@ int main() // NOLINT
 #else
     char description[rdm::personality::DESCRIPTION_MAX_LENGTH];
     pixeldmx::paramsdmx::SetPersonalityDescription(description);
-    
+
     RDMPersonality* personalities[2] = {new RDMPersonality(description, &pixeldmx), new RDMPersonality("Config mode", &pixeldmx_paramsrdm)};
     RDMResponder rdm_responder(personalities, 2);
 #endif
@@ -104,17 +101,13 @@ int main() // NOLINT
     rdm_responder.DmxDisableOutput(!kIsConfigMode && (kTestPattern != pixelpatterns::Pattern::kNone));
     rdm_responder.Print();
 
-    if (kIsConfigMode)
-    {
+    if (kIsConfigMode) {
         pixeldmx_paramsrdm.Print();
-    }
-    else
-    {
+    } else {
         pixeldmx.Print();
     }
 
-    if (kIsConfigMode)
-    {
+    if (kIsConfigMode) {
         puts("Config mode");
     }
 
@@ -132,8 +125,7 @@ int main() // NOLINT
 
     common::firmware::pixeldmx::Show(7);
 
-    if (kIsConfigMode)
-    {
+    if (kIsConfigMode) {
         display.ClearLine(3);
         display.ClearLine(4);
         display.Write(4, "Config Mode");
@@ -143,8 +135,7 @@ int main() // NOLINT
     hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
     hal::WatchdogInit();
 
-    for (;;)
-    {
+    for (;;) {
         hal::WatchdogFeed();
         rdm_responder.Run();
 #if !defined(NO_EMAC)

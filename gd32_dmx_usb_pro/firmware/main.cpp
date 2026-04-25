@@ -38,19 +38,14 @@
 #define ALIGNED __attribute__((aligned(4)))
 #endif
 
-static constexpr char kWidgetModeNames[4][12] ALIGNED = 
-{
+static constexpr char kWidgetModeNames[4][12] ALIGNED = {
   "DMX_RDM", 
   "DMX", 
   "RDM", 
   "RDM_SNIFFER"
 };
 
-static constexpr rdm::device::InfoData kDeviceLabel ALIGNED = 
-{
-  const_cast<char*>("GD32F103RC DMX USB Pro"),
-  22
-};
+static constexpr rdm::device::InfoData kDeviceLabel ALIGNED = {const_cast<char*>("GD32F103RC DMX USB Pro"), 22};
 
 int main() // NOLINT
 {
@@ -80,14 +75,12 @@ int main() // NOLINT
 
     hal::WatchdogInit();
 
-    if (kWidgetMode == widget::Mode::kRdmSniffer)
-    {
+    if (kWidgetMode == widget::Mode::kRdmSniffer) {
         widget.SetPortDirection(0, dmx::PortDirection::kInput, true);
         widget.SnifferFillTransmitBuffer(); // Prevent missing first frame
     }
 
-    for (;;)
-    {
+    for (;;) {
         hal::WatchdogFeed();
         widget.Run();
         hal::Run();
