@@ -1,7 +1,7 @@
 /**
  * @file hwclock.cpp
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,29 +32,25 @@
 
 #include "hwclock.h"
 
-#include "hal_watchdog.h"
-#include "hal_millis.h"
+#include "watchdog.h"
+#include "timing.h"
 
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-HwClock::HwClock()
-{
+HwClock::HwClock() {
     assert(s_this == nullptr);
     s_this = this;
 }
 
-void HwClock::Print()
-{
-    if (!is_connected_)
-    {
+void HwClock::Print() {
+    if (!is_connected_) {
         puts("No RTC connected");
         return;
     }
 
     const char* type = "Unknown";
 
-    switch (type_)
-    {
+    switch (type_) {
         case rtc::Type::kMcP7941X:
             type = "MCP7941X";
             break;
@@ -79,20 +75,17 @@ void HwClock::Print()
 /*
  * Set the System Clock from the Hardware Clock.
  */
-void HwClock::HcToSys()
-{
+void HwClock::HcToSys() {
     DEBUG_ENTRY();
-    if (!is_connected_)
-    {
+    if (!is_connected_) {
         DEBUG_EXIT();
         return;
     }
 
-    const auto kIsWatchdog = hal::Watchdog();
+    const auto kIsWatchdog = watchdog::Watchdog();
 
-    if (kIsWatchdog)
-    {
-        hal::WatchdogStop();
+    if (kIsWatchdog) {
+        watchdog::Stop();
     }
 
     struct tm rtc_t1;
@@ -107,14 +100,12 @@ void HwClock::HcToSys()
     struct tm rtc_t2;
     struct timeval tv_t2;
 
-    while (true)
-    {
+    while (true) {
         RtcGet(&rtc_t2);
 
         const auto kSeconds2 = rtc_t2.tm_sec + rtc_t2.tm_min * 60;
 
-        if (kSecondsT1 != kSeconds2)
-        {
+        if (kSecondsT1 != kSeconds2) {
             gettimeofday(&tv_t2, nullptr);
             break;
         }
@@ -123,29 +114,22 @@ void HwClock::HcToSys()
     struct timeval tv;
     tv.tv_sec = kSeconds;
 
-    if (tv_t2.tv_sec == tv_t1.tv_sec)
-    {
+    if (tv_t2.tv_sec == tv_t1.tv_sec) {
         tv.tv_usec = 1000000 - (tv_t2.tv_usec - tv_t1.tv_usec);
-    }
-    else
-    {
-        if (tv_t2.tv_usec - tv_t1.tv_usec >= 0)
-        {
+    } else {
+        if (tv_t2.tv_usec - tv_t1.tv_usec >= 0) {
             tv.tv_usec = tv_t2.tv_usec - tv_t1.tv_usec;
-        }
-        else
-        {
+        } else {
             tv.tv_usec = tv_t1.tv_usec - tv_t2.tv_usec;
         }
     }
 
     settimeofday(&tv, nullptr);
 
-    last_hc_to_sys_millis_ = hal::Millis();
+    last_hc_to_sys_millis_ = timing::Millis();
 
-    if (kIsWatchdog)
-    {
-        hal::WatchdogInit();
+    if (kIsWatchdog) {
+        watchdog::Init();
     }
 
     DEBUG_EXIT();
@@ -154,41 +138,35 @@ void HwClock::HcToSys()
 /*
  * Set the Hardware Clock from the System Clock.
  */
-void HwClock::SysToHc()
-{
+void HwClock::SysToHc() {
     DEBUG_ENTRY();
-    if (!is_connected_)
-    {
+    if (!is_connected_) {
         DEBUG_EXIT();
         return;
     }
 
-    const auto kIsWatchdog = hal::Watchdog();
+    const auto kIsWatchdog = watchdog::Watchdog();
 
-    if (kIsWatchdog)
-    {
-        hal::WatchdogStop();
+    if (kIsWatchdog) {
+        watchdog::Stop();
     }
 
     struct timeval tv1;
     gettimeofday(&tv1, nullptr);
 
-    while (true)
-    {
+    while (true) {
         struct timeval tv2;
         gettimeofday(&tv2, nullptr);
 
-        if (tv2.tv_sec >= (tv1.tv_sec + 1))
-        {
+        if (tv2.tv_sec >= (tv1.tv_sec + 1)) {
             const auto* tm = gmtime(&tv2.tv_sec);
             RtcSet(tm);
             break;
         }
     }
 
-    if (kIsWatchdog)
-    {
-        hal::WatchdogInit();
+    if (kIsWatchdog) {
+        watchdog::Init();
     }
 
     DEBUG_EXIT();

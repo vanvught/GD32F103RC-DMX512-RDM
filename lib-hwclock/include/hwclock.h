@@ -2,7 +2,7 @@
  * @file hwclock.h
  *
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,21 +29,21 @@
 #include <cstdint>
 #include <time.h>
 #include <sys/time.h>
+#if !defined(DISABLE_RTC)
+#include <cassert>
+#endif
 
-namespace rtc
-{
-enum class Type : uint8_t
-{
-    kMcP7941X,
-    kDS3231,
-    kPcF8563,
-    kSocInternal,
-    kUnknown
+namespace rtc {
+enum class Type : uint8_t { 
+	kMcP7941X, 
+	kDS3231, 
+	kPcF8563, 
+	kSocInternal, 
+	kUnknown 
 };
 } // namespace rtc
 
-class HwClock
-{
+class HwClock {
    public:
     HwClock();
     void RtcProbe();
@@ -64,10 +64,8 @@ class HwClock
 
     bool IsConnected() const { return is_connected_; }
 
-    void Run(bool do_run)
-    {
-        if (!do_run || !is_connected_)
-        {
+    void Run(bool do_run) {
+        if (!do_run || !is_connected_) {
             return;
         }
         Process();
@@ -99,4 +97,16 @@ class HwClock
     static inline HwClock* s_this;
 };
 
-#endif  // HWCLOCK_H_
+namespace rtc {
+inline bool Set([[maybe_unused]] const struct tm* rtc_time) {
+#if !defined(DISABLE_RTC)
+    assert(HwClock::Get() != nullptr);
+    HwClock::Get()->Set(rtc_time);
+    return true;
+#else
+    return false;
+#endif
+}
+} // namespace rtc
+
+#endif // HWCLOCK_H_

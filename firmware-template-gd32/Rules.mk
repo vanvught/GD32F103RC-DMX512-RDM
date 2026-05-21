@@ -32,7 +32,7 @@ include ../common/make/gd32/Includes.mk
 include ../common/make/gd32/Validate.mk
 include ../common/make/Timestamp.mk
 
-LIBS+=gd32 clib
+LIBS+=clib gd32
 
 # The variable for the libraries include directory
 LIBINCDIRS:=$(addprefix -I../lib-,$(LIBS))
@@ -47,6 +47,8 @@ LDLIBS:=$(addprefix -l,$(LIBS))
 
 # The variables for the dependency check
 LIBDEP=$(addprefix ../lib-,$(LIBS))
+
+DEFINES+=-DCONFIG_CLIB_USE_UART0
 
 COPS=-DGD32 -D$(FAMILY_UCA) -D$(LINE_UC) -D$(MCU) -D$(BOARD)
 COPS+=$(strip $(DEFINES) $(MAKE_FLAGS) $(INCLUDES) $(LIBINCDIRS))
