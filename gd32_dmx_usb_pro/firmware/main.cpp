@@ -26,7 +26,7 @@
 #include <cstdio>
 
 #include "hal.h"
-#include "gd32/hal_watchdog.h"
+#include "watchdog.h"
 #include "hal_boardinfo.h"
 #include "rdmdevice.h"
 #include "widget.h"
@@ -53,7 +53,7 @@ int main() // NOLINT
     ConfigStore config_store;
 
     Widget widget;
-    widget.SetPortDirection(0, dmx::PortDirection::kInput, false);
+    widget.SetPortDirection(0, dmx::Direction::kInput, false);
 
     WidgetParams widget_params;
     widget_params.Load();
@@ -73,15 +73,15 @@ int main() // NOLINT
     printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, ", uid[0], uid[1], uid[2], uid[3], uid[4], uid[5]);
     printf("Label : %.*s\n", static_cast<int>(label.length), reinterpret_cast<const char*>(label.data));
 
-    hal::WatchdogInit();
+    watchdog::Init();
 
     if (kWidgetMode == widget::Mode::kRdmSniffer) {
-        widget.SetPortDirection(0, dmx::PortDirection::kInput, true);
+        widget.SetPortDirection(0, dmx::Direction::kInput, true);
         widget.SnifferFillTransmitBuffer(); // Prevent missing first frame
     }
 
     for (;;) {
-        hal::WatchdogFeed();
+        watchdog::Feed();
         widget.Run();
         hal::Run();
     }

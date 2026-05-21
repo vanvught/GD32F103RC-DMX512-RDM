@@ -25,8 +25,9 @@
 #include <cstdio>
 
 #include "gd32/hal.h"
-#include "gd32/hal_watchdog.h"
+#include "watchdog.h"
 #include "displayudf.h"
+#include "hal_statusled.h"
 #include "json/displayudfparams.h"
 #include "rdmdevice.h"
 #include "rdmresponder.h"
@@ -81,19 +82,19 @@ int main() // NOLINT
 
 #if defined(CONFIG_RDM_MANUFACTURER_PIDS_SET)
     static constexpr auto kPersonalityCount = static_cast<uint32_t>(pixel::LedType::kUndefined);
-    RDMPersonality* personalities[kPersonalityCount];
+    RdmPersonality* personalities[kPersonalityCount];
 
     for (uint32_t index = 0; index < kPersonalityCount; index++) {
         const auto* description = pixel::GetTypeName(static_cast<pixel::LedType>(index));
-        personalities[index] = new RDMPersonality(description, &pixeldmx);
+        personalities[index] = new RdmPersonality(description, &pixeldmx);
     }
 
     RDMResponder rdm_responder(personalities, kPersonalityCount, static_cast<uint32_t>(pixeldmx.GetType()) + 1U);
 #else
-    char description[rdm::personality::DESCRIPTION_MAX_LENGTH];
+    char description[rdm::personality::kDescriptionMaxLength];
     pixeldmx::paramsdmx::SetPersonalityDescription(description);
 
-    RDMPersonality* personalities[2] = {new RDMPersonality(description, &pixeldmx), new RDMPersonality("Config mode", &pixeldmx_paramsrdm)};
+    RdmPersonality* personalities[2] = {new RdmPersonality(description, &pixeldmx), new RdmPersonality("Config mode", &pixeldmx_paramsrdm)};
     RDMResponder rdm_responder(personalities, 2);
 #endif
     rdm_responder.Init();
@@ -132,11 +133,11 @@ int main() // NOLINT
         display.ClearLine(5);
     }
 
-    hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
-    hal::WatchdogInit();
+    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+    watchdog::Init();
 
     for (;;) {
-        hal::WatchdogFeed();
+        watchdog::Feed();
         rdm_responder.Run();
 #if !defined(NO_EMAC)
         network::Run();
