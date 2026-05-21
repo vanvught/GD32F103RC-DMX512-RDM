@@ -34,7 +34,7 @@
 #if !defined(NO_HDMI_OUTPUT)
 #include "widgetmonitor.h"
 #endif
-#include "hal_millis.h"
+#include "timing.h"
 #include "dmx.h"
 #include "rdm.h"
 #include "rdmdevice.h"
@@ -67,7 +67,7 @@ Widget::Widget()
     usb_init();
 
     SetOutputStyle(0, dmx::OutputStyle::kConstant);
-    SetPortDirection(0, dmx::PortDirection::kInput, false);
+    SetPortDirection(0, dmx::Direction::kInput, false);
 }
 
 /*
@@ -106,16 +106,16 @@ void Widget::SetParams()
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
 #endif
 
-    SetPortDirection(0, dmx::PortDirection::kInput, false);
+    SetPortDirection(0, dmx::Direction::kInput, false);
 
     widget_configuration.break_time = data_[2];
     widget_configuration.mab_time = data_[3];
     widget_configuration.refresh_rate = data_[4];
     WidgetConfiguration::Store(&widget_configuration);
 
-    SetPortDirection(0, dmx::PortDirection::kInput, true);
+    SetPortDirection(0, dmx::Direction::kInput, true);
 
-    received_dmx_packet_start_millis_ = hal::Millis();
+    received_dmx_packet_start_millis_ = timing::Millis();
 }
 
 /**
@@ -134,7 +134,7 @@ void Widget::ReceivedDmxPacket()
         return;
     }
 
-    if (is_rdm_discovery_running_ || (dmx::PortDirection::kInput != GetPortDirection(0)) || (widget::SendState::kOnDataChangeOnly == send_state_))
+    if (is_rdm_discovery_running_ || (dmx::Direction::kInput != PortDirection(0)) || (widget::SendState::kOnDataChangeOnly == send_state_))
     {
         return;
     }
@@ -146,7 +146,7 @@ void Widget::ReceivedDmxPacket()
         return;
     }
 
-    const auto kMillis = hal::Millis();
+    const auto kMillis = timing::Millis();
 
     if (kMillis - received_dmx_packet_start_millis_ < received_dmx_packet_period_millis_)
     {
@@ -157,7 +157,7 @@ void Widget::ReceivedDmxPacket()
     received_dmx_packet_count_++;
 
     const auto* dmx_statistics = reinterpret_cast<const struct Data*>(dmx_data_available);
-    const auto kLength = dmx_statistics->Statistics.nSlotsInPacket + 1;
+    const auto kLength = dmx_statistics->statistics.slots_in_packet + 1;
 
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kLabel, "RECEIVED_DMX_PACKET");
@@ -272,9 +272,9 @@ void Widget::SendDmxPacketRequestOutputOnly(uint16_t data_length)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
 #endif
 
-    Dmx::SetPortDirection(0, dmx::PortDirection::kOutput, false);
-    Dmx::SetSendData<dmx::SendStyle::kDirect>(0, data_, data_length);
-    Dmx::SetPortDirection(0, dmx::PortDirection::kOutput, true);
+    Dmx::SetPortDirection(0, dmx::Direction::kOutput, false);
+    Dmx::SetTransmitDataWithSC<dmx::SendStyle::kDirect>(0, data_, data_length);
+    Dmx::SetPortDirection(0, dmx::Direction::kOutput, true);
 }
 
 /**
@@ -297,9 +297,9 @@ void Widget::SendRdmPacketRequest(uint16_t data_length)
 
     is_rdm_discovery_running_ = (data->command_class == E120_DISCOVERY_COMMAND);
 
-    Rdm::SendRaw(0, data_, data_length);
+    Rdm::TransmitRaw(0, data_, data_length);
 
-    send_rdm_packet_start_millis_ = hal::Millis();
+    send_rdm_packet_start_millis_ = timing::Millis();
 
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::RdmData(widgetmonitor::MonitorLine::kRdmData, data_length, data_, true);
@@ -323,7 +323,7 @@ void Widget::RdmTimeout()
         return;
     }
 
-    if (hal::Millis() - send_rdm_packet_start_millis_ < 1000U)
+    if (timing::Millis() - send_rdm_packet_start_millis_ < 1000U)
     { // 1 second
         return;
     }
@@ -355,11 +355,11 @@ void Widget::ReceiveDmxOnChange()
 
     send_state_ = static_cast<widget::SendState>(data_[0]);
 
-    Dmx::SetPortDirection(0, dmx::PortDirection::kInput, false);
+    Dmx::SetPortDirection(0, dmx::Direction::kInput, false);
     Dmx::ClearData(0);
-    Dmx::SetPortDirection(0, dmx::PortDirection::kInput, true);
+    Dmx::SetPortDirection(0, dmx::Direction::kInput, true);
 
-    received_dmx_packet_start_millis_ = hal::Millis();
+    received_dmx_packet_start_millis_ = timing::Millis();
 }
 
 /**
@@ -377,7 +377,7 @@ void Widget::ReceivedDmxChangeOfStatePacket()
         return;
     }
 
-    if (is_rdm_discovery_running_ || (dmx::PortDirection::kInput != GetPortDirection(0)) || (widget::SendState::kAlways == send_state_))
+    if (is_rdm_discovery_running_ || (dmx::Direction::kInput != PortDirection(0)) || (widget::SendState::kAlways == send_state_))
     {
         return;
     }
@@ -405,13 +405,13 @@ void Widget::GetSnReply()
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
 #endif
 
-    Dmx::SetPortDirection(0, dmx::PortDirection::kInput, false);
+    Dmx::SetPortDirection(0, dmx::Direction::kInput, false);
 
     SendMessage(kGetWidgetSnReply, rdm::device::Base::Instance().GetSN(), DEVICE_SN_LENGTH);
 
-    Dmx::SetPortDirection(0, dmx::PortDirection::kInput, true);
+    Dmx::SetPortDirection(0, dmx::Direction::kInput, true);
 
-    received_dmx_packet_start_millis_ = hal::Millis();
+    received_dmx_packet_start_millis_ = timing::Millis();
 }
 
 /**
@@ -428,10 +428,10 @@ void Widget::SendRdmDiscoveryRequest(uint16_t data_length)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
 #endif
 
-    Rdm::SendRaw(0, data_, data_length);
+    Rdm::TransmitRaw(0, data_, data_length);
 
     is_rdm_discovery_running_ = true;
-    send_rdm_packet_start_millis_ = hal::Millis();
+    send_rdm_packet_start_millis_ = timing::Millis();
 
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::RdmData(widgetmonitor::MonitorLine::kRdmData, data_length, data_, true);
@@ -480,16 +480,16 @@ void Widget::GetManufacturerReply()
     struct rdm::device::InfoData manufacturer_id;
     rdm::device::Device::Instance().GetManufacturerId(&manufacturer_id);
 
-    Dmx::SetPortDirection(0, dmx::PortDirection::kInput, false);
+    Dmx::SetPortDirection(0, dmx::Direction::kInput, false);
 
     SendHeader(kManufacturerLabel, static_cast<uint32_t>(manufacturer_id.length + manufacturer_name.length));
     SendData(reinterpret_cast<uint8_t*>(manufacturer_id.data), manufacturer_id.length);
     SendData(reinterpret_cast<uint8_t*>(manufacturer_name.data), manufacturer_name.length);
     SendFooter();
 
-    Dmx::SetPortDirection(0, dmx::PortDirection::kInput, true);
+    Dmx::SetPortDirection(0, dmx::Direction::kInput, true);
 
-    received_dmx_packet_start_millis_ = hal::Millis();
+    received_dmx_packet_start_millis_ = timing::Millis();
 }
 
 /**
@@ -511,16 +511,16 @@ void Widget::GetNameReply()
     TWidgetConfigurationData widget_type_id;
     WidgetConfiguration::GetTypeId(&widget_type_id);
 
-    Dmx::SetPortDirection(0, dmx::PortDirection::kInput, false);
+    Dmx::SetPortDirection(0, dmx::Direction::kInput, false);
 
     SendHeader(kGetWidgetNameLabel, static_cast<uint32_t>(widget_type_id.length + widget_label.length));
     SendData(widget_type_id.data, widget_type_id.length);
     SendData(reinterpret_cast<uint8_t*>(widget_label.data), widget_label.length);
     SendFooter();
 
-    Dmx::SetPortDirection(0, dmx::PortDirection::kInput, true);
+    Dmx::SetPortDirection(0, dmx::Direction::kInput, true);
 
-    received_dmx_packet_start_millis_ = hal::Millis();
+    received_dmx_packet_start_millis_ = timing::Millis();
 }
 
 /**
