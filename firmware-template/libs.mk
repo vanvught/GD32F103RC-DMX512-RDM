@@ -29,6 +29,6 @@ ifeq ($(findstring DISPLAY_UDF,$(DEFINES)),DISPLAY_UDF)
 	LIBS+=displayudf
 endif
 
-LIBS+=configstore flashcode display hal hwclock
+LIBS+=configstore flashcode display superloop hal hwclock
 
 $(info $$LIBS [${LIBS}])
