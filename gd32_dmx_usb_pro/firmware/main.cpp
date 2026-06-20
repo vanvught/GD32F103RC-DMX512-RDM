@@ -25,14 +25,14 @@
 
 #include <cstdio>
 
-#include "hal.h"
 #include "watchdog.h"
-#include "board.h"
 #include "rdmdevice.h"
 #include "widget.h"
 #include "widgetparams.h"
 #include "configstore.h"
 #include "software_version.h"
+#include "../../lib-board/include/board.h"
+#include "../../lib-board/include/board.h"
 
 #ifndef ALIGNED
 #define ALIGNED __attribute__((aligned(4)))
@@ -49,7 +49,7 @@ static constexpr rdm::device::InfoData kDeviceLabel ALIGNED = {const_cast<char*>
 
 int main() // NOLINT
 {
-    hal::Init();
+    board::Init();
     ConfigStore config_store;
 
     Widget widget;
@@ -83,6 +83,6 @@ int main() // NOLINT
     for (;;) {
         watchdog::Feed();
         widget.Run();
-        hal::Run();
+        board::Run();
     }
 }

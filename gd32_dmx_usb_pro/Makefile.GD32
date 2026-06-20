@@ -12,7 +12,7 @@ DEFINES+=DISABLE_FS
 
 DEFINES+=NDEBUG
 
-LIBS=widget usb
+LIBS=board widget usb
 
 SRCDIR=firmware
 
