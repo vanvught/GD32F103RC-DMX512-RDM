@@ -85,9 +85,6 @@ clean:
 	rm -rf build_gd32
 	rm -rf lib_gd32
 	
-$(BUILD)%.o: %.c
-	$(CC) $(COPS) -c $< -o $@
-	
 $(TARGET): Makefile.GD32 $(OBJECTS)
 	$(AR) -r $(TARGET) $(OBJECTS)
 	$(PREFIX)objdump -d $(TARGET) | $(PREFIX)c++filt > lib_gd32/lib.list
