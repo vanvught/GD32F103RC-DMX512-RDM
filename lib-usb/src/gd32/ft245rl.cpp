@@ -155,15 +155,15 @@ uint8_t FT245RL_read_data()
     const auto kInGpioA = static_cast<uint16_t>(GPIO_ISTAT(GPIOA));
     const auto kInGpioB = static_cast<uint16_t>(GPIO_ISTAT(GPIOB));
 
-    data |= ((kInGpioA & (GPIO_PIN_6)) ? 4 : 0);
-    data |= ((kInGpioA & (GPIO_PIN_14)) ? 8 : 0);
-    data |= ((kInGpioA & (GPIO_PIN_15)) ? 16 : 0);
+    data |= ((kInGpioA & (GPIO_PIN_6)) ? 4U : 0);
+    data |= ((kInGpioA & (GPIO_PIN_14)) ? 8U : 0);
+    data |= ((kInGpioA & (GPIO_PIN_15)) ? 16U : 0);
 
-    data |= ((kInGpioB & (GPIO_PIN_9)) ? 1 : 0);
-    data |= ((kInGpioB & (GPIO_PIN_8)) ? 2 : 0);
-    data |= ((kInGpioB & (GPIO_PIN_4)) ? 32 : 0);
-    data |= ((kInGpioB & (GPIO_PIN_5)) ? 64 : 0);
-    data |= ((kInGpioB & (GPIO_PIN_3)) ? 128 : 0);
+    data |= ((kInGpioB & (GPIO_PIN_9)) ? 1U : 0);
+    data |= ((kInGpioB & (GPIO_PIN_8)) ? 2U : 0);
+    data |= ((kInGpioB & (GPIO_PIN_4)) ? 32U : 0);
+    data |= ((kInGpioB & (GPIO_PIN_5)) ? 64U : 0);
+    data |= ((kInGpioB & (GPIO_PIN_3)) ? 128U : 0);
 
     // Bring RD# back up so the FT245 can let go of the data.
     Gd32GpioSet(_RD);
