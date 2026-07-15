@@ -32,23 +32,20 @@
 #include "configstore.h"
 #include "software_version.h"
 #include "../../lib-board/include/board.h"
-#include "../../lib-board/include/board.h"
 
 #ifndef ALIGNED
 #define ALIGNED __attribute__((aligned(4)))
 #endif
 
-static constexpr char kWidgetModeNames[4][12] ALIGNED = {
-  "DMX_RDM", 
-  "DMX", 
-  "RDM", 
-  "RDM_SNIFFER"
+static constexpr char kWidgetModeNames[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM", "RDM_SNIFFER"};
+
+static constexpr rdm::device::InfoData kDeviceLabel ALIGNED = 
+{
+  .data = const_cast<char*>("GD32F103RC DMX USB Pro"), 
+  .length = 22
 };
 
-static constexpr rdm::device::InfoData kDeviceLabel ALIGNED = {const_cast<char*>("GD32F103RC DMX USB Pro"), 22};
-
-int main() // NOLINT
-{
+int main() { // NOLINT
     board::Init();
     ConfigStore config_store;
 
@@ -69,7 +66,7 @@ int main() // NOLINT
 
     uint8_t hw_text_length;
     printf("[V%s] %s Compiled on %s at %s\n", kSoftwareVersion, board::BoardName(hw_text_length), __DATE__, __TIME__);
-    printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d (%s)\n", kWidgetMode, kWidgetModeNames[static_cast<uint32_t>(kWidgetMode)]);
+    printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %u (%s)\n", static_cast<unsigned>(kWidgetMode), kWidgetModeNames[static_cast<unsigned>(kWidgetMode)]);
     printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, ", uid[0], uid[1], uid[2], uid[3], uid[4], uid[5]);
     printf("Label : %.*s\n", static_cast<int>(label.length), reinterpret_cast<const char*>(label.data));
 
