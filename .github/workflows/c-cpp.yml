@@ -14,18 +14,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
     - name: Install arm-none-eabi
       run: sudo apt install gcc-arm-none-eabi
-    - name: make gd32_dmx_usb_pro
+    - name: version
+      run: arm-none-eabi-g++ --version
+    - name: build all
       run: |
-        cd gd32_dmx_usb_pro
-        make -f Makefile.GD32 clean
-        make -f Makefile.GD32
-        cd -
-    - name: make gd32_rdm_responder
-      run: |
-        cd gd32_rdm_responder
-        make -f Makefile.GD32 clean
-        make -f Makefile.GD32
-        cd -
+        cd scripts
+        ./build_all.sh
