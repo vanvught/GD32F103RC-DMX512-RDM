@@ -31,7 +31,7 @@
 #include "widgetparams.h"
 #include "configstore.h"
 #include "software_version.h"
-#include "../../lib-board/include/board.h"
+#include "board.h"
 
 #ifndef ALIGNED
 #define ALIGNED __attribute__((aligned(4)))
