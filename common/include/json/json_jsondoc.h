@@ -74,8 +74,6 @@ class JsonDoc {
     };
 
     [[nodiscard]] KeyProxy operator[](std::string_view key) noexcept { return {*this, key}; }
-    // C++23 multidimensional subscript: doc["rdm_enable_port_", "a"] = 1U;
-    [[nodiscard]] KeyProxy operator[](std::string_view first, std::string_view second) noexcept { return {*this, first, second}; }
 
     void End() noexcept {
         if (ended_) {
@@ -118,47 +116,6 @@ class JsonDoc {
         buffer_[pos_] = '\0';
     }
 
-    void AppendEscaped(std::string_view text) noexcept {
-        constexpr char kHex[] = "0123456789abcdef";
-        for (char ch : text) {
-            const auto c = static_cast<unsigned char>(ch);
-            switch (c) {
-                case '"':
-                    Append("\\\"");
-                    break;
-                case '\\':
-                    Append("\\\\");
-                    break;
-                case '\b':
-                    Append("\\b");
-                    break;
-                case '\f':
-                    Append("\\f");
-                    break;
-                case '\n':
-                    Append("\\n");
-                    break;
-                case '\r':
-                    Append("\\r");
-                    break;
-                case '\t':
-                    Append("\\t");
-                    break;
-                default:
-                    if (c < 0x20U) {
-                        const char escape[6] = {'\\', 'u', '0', '0', kHex[c >> 4U], kHex[c & 0x0FU]};
-                        Append(std::string_view{escape, sizeof(escape)});
-                    } else {
-                        Append(static_cast<char>(c));
-                    }
-                    break;
-            }
-            if (overflow_) {
-                return;
-            }
-        }
-    }
-
     void BeginField(std::string_view first, std::string_view second) noexcept {
         if (ended_ || overflow_) {
             overflow_ = true;
@@ -168,8 +125,8 @@ class JsonDoc {
             Append(',');
         }
         Append('"');
-        AppendEscaped(first);
-        AppendEscaped(second);
+        Append(first);
+        Append(second);
         Append("\":");
         first_field_ = false;
     }
@@ -177,7 +134,7 @@ class JsonDoc {
     void WriteStringField(std::string_view first, std::string_view second, std::string_view value) noexcept {
         BeginField(first, second);
         Append('"');
-        AppendEscaped(value);
+        Append(value);
         Append('"');
     }
 
