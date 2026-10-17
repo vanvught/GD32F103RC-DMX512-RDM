@@ -357,7 +357,7 @@ class PixelDmx final : public PixelDmxConfiguration {
 
 #undef OVERRIDE
 #undef SETDATA
-#ifdef CONFIG_PIXELDMX_NO_OPTIMIZE
+#ifndef CONFIG_PIXELDMX_NO_OPTIMIZE
 #pragma GCC pop_options
 #endif // CONFIG_PIXELDMX_NO_OPTIMIZE
 #endif // PIXELDMX_H_
