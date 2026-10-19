@@ -27,6 +27,7 @@
 
 #include <cstdio>
 #include <string_view>
+#include <cassert>
 
 #include "board.h"
 
