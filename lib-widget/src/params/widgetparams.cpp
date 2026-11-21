@@ -46,7 +46,7 @@ struct WidgetParamsMask {
 static void Update(const common::store::Widget* store) {
     ConfigStore::Instance().Store(store, &ConfigurationStore::widget);
 }
-#endif
+#endif // DISABLE_FS
 
 static void Copy(struct ::common::store::Widget* store) {
     ConfigStore::Instance().Copy(store, &ConfigurationStore::widget);
@@ -70,14 +70,14 @@ void WidgetParams::Load() {
     if (configfile.Read(WidgetParamsConst::FILE_NAME)) {
         Update(&store_widget_);
     } else
-#endif
+#endif // DISABLE_FS
         Copy(&store_widget_);
 #else
     configfile.Read(WidgetParamsConst::FILE_NAME);
-#endif
+#endif // WIDGET_HAVE_FLASHROM
 #ifndef NDEBUG
     Dump();
-#endif
+#endif // NDEBUG
     DEBUG_EXIT();
 }
 

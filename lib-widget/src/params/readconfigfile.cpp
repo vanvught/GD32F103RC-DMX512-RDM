@@ -93,7 +93,7 @@ bool ReadConfigFile::Read(const char* pFileName)
 
     return true;
 }
-#endif
+#endif // DISABLE_FS
 
 void ReadConfigFile::Read(const char* pBuffer, uint32_t length)
 {

@@ -33,7 +33,7 @@
 #include "widgetconfiguration.h"
 #if !defined(NO_HDMI_OUTPUT)
 #include "widgetmonitor.h"
-#endif
+#endif // NO_HDMI_OUTPUT
 #include "timing.h"
 #include "dmx.h"
 #include "rdm.h"
@@ -84,7 +84,7 @@ void Widget::GetParamsReply()
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "GET_WIDGET_PARAMS_REPLY");
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
-#endif
+#endif // NO_HDMI_OUTPUT
 
     TWidgetConfiguration widget_configuration;
     WidgetConfiguration::Get(&widget_configuration);
@@ -104,7 +104,7 @@ void Widget::SetParams()
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "SET_WIDGET_PARAMS");
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
-#endif
+#endif // NO_HDMI_OUTPUT
 
     SetPortDirection(0, dmx::Direction::kInput, false);
 
@@ -163,7 +163,7 @@ void Widget::ReceivedDmxPacket()
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kLabel, "RECEIVED_DMX_PACKET");
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "Send DMX data to HOST, %d", kLength);
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
-#endif
+#endif // NO_HDMI_OUTPUT
 
     SendHeader(kReceivedDmxPacket, static_cast<uint16_t>(kLength + 1));
     usb_send_byte(0); // DMX Receive status
@@ -205,7 +205,7 @@ void Widget::ReceivedRdmPacket()
 #if !defined(NO_HDMI_OUTPUT)
         WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "Send RDM data to HOST, l:%d", message_length);
         WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, "RECEIVED_RDM_PACKET SC:0xCC");
-#endif
+#endif // NO_HDMI_OUTPUT
 
         SendHeader(kReceivedDmxPacket, static_cast<uint32_t>(1 + message_length));
         usb_send_byte(0); // RDM Receive status
@@ -230,7 +230,7 @@ void Widget::ReceivedRdmPacket()
 #if !defined(NO_HDMI_OUTPUT)
         WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "Send RDM data to HOST, l:%d", message_length);
         WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, "RECEIVED_RDM_PACKET SC:0xFE");
-#endif
+#endif // NO_HDMI_OUTPUT
 
         SendHeader(kReceivedDmxPacket, static_cast<uint32_t>(1 + message_length));
         usb_send_byte(0); // RDM Receive status
@@ -242,7 +242,7 @@ void Widget::ReceivedRdmPacket()
 
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::RdmData(widgetmonitor::MonitorLine::kRdmData, message_length, rdm_data, false);
-#endif
+#endif // NO_HDMI_OUTPUT
 }
 
 /**
@@ -270,7 +270,7 @@ void Widget::SendDmxPacketRequestOutputOnly(uint16_t data_length)
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "OUTPUT_ONLY_SEND_DMX_PACKET_REQUEST");
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
-#endif
+#endif // NO_HDMI_OUTPUT
 
     Dmx::SetPortDirection(0, dmx::Direction::kOutput, false);
     Dmx::SetTransmitDataWithSC<dmx::SendStyle::kDirect>(0, data_, data_length);
@@ -291,7 +291,7 @@ void Widget::SendRdmPacketRequest(uint16_t data_length)
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "SEND_RDM_PACKET_REQUEST");
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
-#endif
+#endif // NO_HDMI_OUTPUT
 
     const auto* data = reinterpret_cast<const struct TRdmMessage*>(data_);
 
@@ -303,7 +303,7 @@ void Widget::SendRdmPacketRequest(uint16_t data_length)
 
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::RdmData(widgetmonitor::MonitorLine::kRdmData, data_length, data_, true);
-#endif
+#endif // NO_HDMI_OUTPUT
 }
 
 /**
@@ -351,7 +351,7 @@ void Widget::ReceiveDmxOnChange()
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "RECEIVE_DMX_ON_CHANGE");
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
-#endif
+#endif // NO_HDMI_OUTPUT
 
     send_state_ = static_cast<widget::SendState>(data_[0]);
 
@@ -389,7 +389,7 @@ void Widget::ReceivedDmxChangeOfStatePacket()
         WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
         // TODO (a) widget_received_dmx_change_of_state_packet
         WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "Sent changed DMX data to HOST");
-#endif
+#endif // NO_HDMI_OUTPUT
     }
 }
 
@@ -403,7 +403,7 @@ void Widget::GetSnReply()
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "GET_WIDGET_PARAMS_REPLY");
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
-#endif
+#endif // NO_HDMI_OUTPUT
 
     Dmx::SetPortDirection(0, dmx::Direction::kInput, false);
 
@@ -426,7 +426,7 @@ void Widget::SendRdmDiscoveryRequest(uint16_t data_length)
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "SEND_RDM_DISCOVERY_REQUEST");
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
-#endif
+#endif // NO_HDMI_OUTPUT
 
     Rdm::TransmitRaw(0, data_, data_length);
 
@@ -435,7 +435,7 @@ void Widget::SendRdmDiscoveryRequest(uint16_t data_length)
 
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::RdmData(widgetmonitor::MonitorLine::kRdmData, data_length, data_, true);
-#endif
+#endif // NO_HDMI_OUTPUT
 }
 
 /**
@@ -452,7 +452,7 @@ void Widget::RdmTimeOutMessage()
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "Send RDM data to HOST, l:%d", kMessageLength);
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, "RDM_TIMEOUT");
-#endif
+#endif // NO_HDMI_OUTPUT
 
     SendHeader(kRdmTimeout, kMessageLength);
     SendFooter();
@@ -472,7 +472,7 @@ void Widget::GetManufacturerReply()
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "MANUFACTURER_LABEL");
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
-#endif
+#endif // NO_HDMI_OUTPUT
 
     struct rdm::device::InfoData manufacturer_name;
     rdm::device::Device::Instance().GetManufacturerName(&manufacturer_name);
@@ -503,7 +503,7 @@ void Widget::GetNameReply()
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "GET_WIDGET_NAME_LABEL");
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
-#endif
+#endif // NO_HDMI_OUTPUT
 
     struct rdm::device::InfoData widget_label;
     rdm::device::Device::Instance().GetLabel(&widget_label);
@@ -553,7 +553,7 @@ void Widget::ReceiveDataFromHost()
 
 #if !defined(NO_HDMI_OUTPUT)
             WidgetMonitor::Line(widgetmonitor::MonitorLine::kLabel, "L:%d:%d(%d)", kLabel, kDataLength, i);
-#endif
+#endif // NO_HDMI_OUTPUT
 
             switch (kLabel)
             {

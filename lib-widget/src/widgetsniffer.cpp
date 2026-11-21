@@ -32,7 +32,7 @@
 #include "usb.h"
 #if !defined(NO_HDMI_OUTPUT)
 #include "widgetmonitor.h"
-#endif
+#endif // NO_HDMI_OUTPUT
 
 #define SNIFFER_PACKET 0x81     ///< Label
 #define SNIFFER_PACKET_SIZE 200 ///< Packet size
@@ -89,7 +89,7 @@ bool Widget::UsbCanSend()
     {
 #if !defined(NO_HDMI_OUTPUT)
         WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "!Failed! Cannot send to host");
-#endif
+#endif // NO_HDMI_OUTPUT
         return false;
     }
 
@@ -123,7 +123,7 @@ void Widget::SnifferDmx()
 
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "Send DMX data to HOST -> %d", kDataLength);
-#endif
+#endif // NO_HDMI_OUTPUT
     UsbSendPackage(dmx_data_changed, 0, static_cast<uint16_t>(kDataLength));
 }
 
@@ -181,7 +181,7 @@ void Widget::SnifferRdm()
 
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "Send RDM data to HOST");
-#endif
+#endif // NO_HDMI_OUTPUT
     UsbSendPackage(rdm_data, 0, message_length);
 }
 
