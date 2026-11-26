@@ -39,34 +39,27 @@
 #define CONTROL_MASK 0x00       ///< If the high bit is set, this is a data byte, otherwise it's a control byte
 #define DATA_MASK 0x80          ///< If the high bit is set, this is a data byte, otherwise it's a control byte
 
-void Widget::UsbSendPackage(const uint8_t* data, uint16_t start, uint16_t data_length)
-{
+void Widget::UsbSendPackage(const uint8_t* data, uint16_t start, uint16_t data_length) {
     uint32_t i;
 
-    if (data_length < (SNIFFER_PACKET_SIZE / 2))
-    {
+    if (data_length < (SNIFFER_PACKET_SIZE / 2)) {
         SendHeader(SNIFFER_PACKET, SNIFFER_PACKET_SIZE);
 
-        for (i = 0; i < data_length; i++)
-        {
+        for (i = 0; i < data_length; i++) {
             usb_send_byte(DATA_MASK);
             usb_send_byte(data[i + start]);
         }
 
-        for (i = data_length; i < SNIFFER_PACKET_SIZE / 2; i++)
-        {
+        for (i = data_length; i < SNIFFER_PACKET_SIZE / 2; i++) {
             usb_send_byte(CONTROL_MASK);
             usb_send_byte(0x02);
         }
 
         SendFooter();
-    }
-    else
-    {
+    } else {
         SendHeader(SNIFFER_PACKET, SNIFFER_PACKET_SIZE);
 
-        for (i = 0; i < SNIFFER_PACKET_SIZE / 2; i++)
-        {
+        for (i = 0; i < SNIFFER_PACKET_SIZE / 2; i++) {
             usb_send_byte(DATA_MASK);
             usb_send_byte(data[i + start]);
         }
@@ -77,17 +70,14 @@ void Widget::UsbSendPackage(const uint8_t* data, uint16_t start, uint16_t data_l
     }
 }
 
-bool Widget::UsbCanSend()
-{
+bool Widget::UsbCanSend() {
     const auto kMicros = timing::Micros();
 
-    while (!usb_can_write() && (timing::Micros() - kMicros < 1000))
-    {
+    while (!usb_can_write() && (timing::Micros() - kMicros < 1000)) {
     }
 
-    if (!usb_can_write())
-    {
-#if !defined(NO_HDMI_OUTPUT)
+    if (!usb_can_write()) {
+#ifndef NO_HDMI_OUTPUT
         WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "!Failed! Cannot send to host");
 #endif // NO_HDMI_OUTPUT
         return false;
@@ -99,29 +89,25 @@ bool Widget::UsbCanSend()
 /**
  * This function is called from Run
  */
-void Widget::SnifferDmx()
-{
-    if ((GetMode() != widget::Mode::kRdmSniffer) || !UsbCanSend())
-    {
+void Widget::SnifferDmx() {
+    if ((GetMode() != widget::Mode::kRdmSniffer) || !UsbCanSend()) {
         return;
     }
 
     const auto* dmx_data_changed = Dmx::GetDmxChanged(0);
 
-    if (dmx_data_changed == nullptr)
-    {
+    if (dmx_data_changed == nullptr) {
         return;
     }
 
     const auto* dmx_statistics = reinterpret_cast<const struct Data*>(dmx_data_changed);
     const auto kDataLength = dmx_statistics->statistics.slots_in_packet + 1;
 
-    if (!UsbCanSend())
-    {
+    if (!UsbCanSend()) {
         return;
     }
 
-#if !defined(NO_HDMI_OUTPUT)
+#ifndef NO_HDMI_OUTPUT
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "Send DMX data to HOST -> %d", kDataLength);
 #endif // NO_HDMI_OUTPUT
     UsbSendPackage(dmx_data_changed, 0, static_cast<uint16_t>(kDataLength));
@@ -130,28 +116,23 @@ void Widget::SnifferDmx()
 /**
  * This function is called from Run
  */
-void Widget::SnifferRdm()
-{
-    if ((GetMode() != widget::Mode::kRdmSniffer) || !UsbCanSend())
-    {
+void Widget::SnifferRdm() {
+    if ((GetMode() != widget::Mode::kRdmSniffer) || !UsbCanSend()) {
         return;
     }
 
-    const auto* rdm_data = Rdm::Receive(0);
+    const auto kRdmData = Rdm::Receive(0);
 
-    if (rdm_data == nullptr)
-    {
+    if (kRdmData.empty()) {
         return;
     }
 
     uint8_t message_length = 0;
 
-    if (rdm_data[0] == E120_SC_RDM)
-    {
-        const auto* p = reinterpret_cast<const struct TRdmMessage*>(rdm_data);
+    if (kRdmData[0] == E120_SC_RDM) {
+        const auto* p = reinterpret_cast<const struct TRdmMessage*>(kRdmData.data());
         message_length = static_cast<uint8_t>(p->message_length + 2);
-        switch (p->command_class)
-        {
+        switch (p->command_class) {
             case E120_DISCOVERY_COMMAND:
                 rdm_statistics_.discovery_packets++;
                 break;
@@ -167,37 +148,30 @@ void Widget::SnifferRdm()
             default:
                 break;
         }
-    }
-    else if (rdm_data[0] == 0xFE)
-    {
+    } else if (kRdmData[0] == 0xFE) {
         rdm_statistics_.discovery_response_packets++;
         message_length = 24;
     }
 
-    if (!UsbCanSend())
-    {
+    if (!UsbCanSend()) {
         return;
     }
 
-#if !defined(NO_HDMI_OUTPUT)
+#ifndef NO_HDMI_OUTPUT
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "Send RDM data to HOST");
 #endif // NO_HDMI_OUTPUT
-    UsbSendPackage(rdm_data, 0, message_length);
+    UsbSendPackage(kRdmData.data(), 0, message_length);
 }
 
-void Widget::SnifferFillTransmitBuffer()
-{
-    if (!UsbCanSend())
-    {
+void Widget::SnifferFillTransmitBuffer() {
+    if (!UsbCanSend()) {
         return;
     }
 
     int i = 256;
 
-    while (i--)
-    {
-        if (!UsbCanSend())
-        {
+    while (i--) {
+        if (!UsbCanSend()) {
             return;
         }
         usb_send_byte(0);

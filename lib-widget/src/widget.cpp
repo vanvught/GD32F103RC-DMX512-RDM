@@ -41,26 +41,24 @@
 #include "rdm_e120.h"
 #include "usb.h"
 
-enum
-{
-    kGetWidgetParams = 3,                    ///< Get Widget Parameters Request
-    kGetWidgetParamsReply = 3,               ///< Get Widget Parameters Reply
-    kSetWidgetParams = 4,                    ///< Set Widget Parameters Request
-    kReceivedDmxPacket = 5,                  ///< Received DMX Packet
+enum {
+    kGetWidgetParams = 3,                ///< Get Widget Parameters Request
+    kGetWidgetParamsReply = 3,           ///< Get Widget Parameters Reply
+    kSetWidgetParams = 4,                ///< Set Widget Parameters Request
+    kReceivedDmxPacket = 5,              ///< Received DMX Packet
     kOutputOnlySendDmxPacketRequest = 6, ///< Output Only Send DMX Packet Request
-    kSendRdmPacketRequest = 7,             ///< Send RDM Packet Request
-    kReceiveDmxOnChange = 8,               ///< Receive DMX on Change
-    kReceivedDmxCosType = 9,               ///< Received DMX Change Of State Packet
-    kGetWidgetSnRequest = 10,              ///< Get Widget Serial Number Request
-    kGetWidgetSnReply = 10,                ///< Get Widget Serial Number Reply
-    kSendRdmDiscoveryRequest = 11,         ///< Send RDM Discovery Request
-    kRdmTimeout = 12,                        ///< https://github.com/OpenLightingProject/ola/blob/master/plugins/usbpro/EnttecUsbProWidget.cpp#L353
-    kManufacturerLabel = 77,                 ///< https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
-    kGetWidgetNameLabel = 78               ///< https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
+    kSendRdmPacketRequest = 7,           ///< Send RDM Packet Request
+    kReceiveDmxOnChange = 8,             ///< Receive DMX on Change
+    kReceivedDmxCosType = 9,             ///< Received DMX Change Of State Packet
+    kGetWidgetSnRequest = 10,            ///< Get Widget Serial Number Request
+    kGetWidgetSnReply = 10,              ///< Get Widget Serial Number Reply
+    kSendRdmDiscoveryRequest = 11,       ///< Send RDM Discovery Request
+    kRdmTimeout = 12,                    ///< https://github.com/OpenLightingProject/ola/blob/master/plugins/usbpro/EnttecUsbProWidget.cpp#L353
+    kManufacturerLabel = 77,             ///< https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
+    kGetWidgetNameLabel = 78             ///< https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
 };
 
-Widget::Widget()
-{
+Widget::Widget() {
     assert(s_this == nullptr);
     s_this = this;
 
@@ -79,9 +77,8 @@ Widget::Widget()
  * Get Widget Parameters Reply (Label=3 \ref GET_WIDGET_PARAMS_REPLY)
  * The Widget sends this message to the PC in response to the Get Widget Parameters request.
  */
-void Widget::GetParamsReply()
-{
-#if !defined(NO_HDMI_OUTPUT)
+void Widget::GetParamsReply() {
+#ifndef NO_HDMI_OUTPUT
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "GET_WIDGET_PARAMS_REPLY");
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
 #endif // NO_HDMI_OUTPUT
@@ -97,11 +94,10 @@ void Widget::GetParamsReply()
  * This message sets the Widget configuration. The Widget configuration is preserved when the Widget loses power.
  *
  */
-void Widget::SetParams()
-{
+void Widget::SetParams() {
     TWidgetConfiguration widget_configuration;
 
-#if !defined(NO_HDMI_OUTPUT)
+#ifndef NO_HDMI_OUTPUT
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "SET_WIDGET_PARAMS");
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
 #endif // NO_HDMI_OUTPUT
@@ -127,29 +123,24 @@ void Widget::SetParams()
  * The Widget sends this message to the PC unsolicited, whenever the Widget receives a DMX or RDM packet from the DMX port,
  * and the Receive DMX on Change mode (\ref receive_dmx_on_change) is 'Send always' (\ref SEND_ALWAYS).
  */
-void Widget::ReceivedDmxPacket()
-{
-    if (mode_ == widget::Mode::kRdmSniffer)
-    {
+void Widget::ReceivedDmxPacket() {
+    if (mode_ == widget::Mode::kRdmSniffer) {
         return;
     }
 
-    if (is_rdm_discovery_running_ || (dmx::Direction::kInput != PortDirection(0)) || (widget::SendState::kOnDataChangeOnly == send_state_))
-    {
+    if (is_rdm_discovery_running_ || (dmx::Direction::kInput != PortDirection(0)) || (widget::SendState::kOnDataChangeOnly == send_state_)) {
         return;
     }
 
     const auto* dmx_data_available = GetDmxAvailable(0);
 
-    if (dmx_data_available == nullptr)
-    {
+    if (dmx_data_available == nullptr) {
         return;
     }
 
     const auto kMillis = timing::Millis();
 
-    if (kMillis - received_dmx_packet_start_millis_ < received_dmx_packet_period_millis_)
-    {
+    if (kMillis - received_dmx_packet_start_millis_ < received_dmx_packet_period_millis_) {
         return;
     }
 
@@ -159,7 +150,7 @@ void Widget::ReceivedDmxPacket()
     const auto* dmx_statistics = reinterpret_cast<const struct Data*>(dmx_data_available);
     const auto kLength = dmx_statistics->statistics.slots_in_packet + 1;
 
-#if !defined(NO_HDMI_OUTPUT)
+#ifndef NO_HDMI_OUTPUT
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kLabel, "RECEIVED_DMX_PACKET");
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "Send DMX data to HOST, %d", kLength);
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
@@ -180,25 +171,21 @@ void Widget::ReceivedDmxPacket()
  * The Widget sends this message to the PC unsolicited, whenever the Widget receives a DMX or RDM packet from the DMX port,
  * and the Receive DMX on Change mode is 'Send always' (SEND_ALWAYS).
  */
-void Widget::ReceivedRdmPacket()
-{
-    if ((mode_ == widget::Mode::kDmx) || (mode_ == widget::Mode::kRdmSniffer) || (send_state_ == widget::SendState::kOnDataChangeOnly))
-    {
+void Widget::ReceivedRdmPacket() {
+    if ((mode_ == widget::Mode::kDmx) || (mode_ == widget::Mode::kRdmSniffer) || (send_state_ == widget::SendState::kOnDataChangeOnly)) {
         return;
     }
 
-    const auto* rdm_data = Rdm::Receive(0);
+    const auto rdm_data = Rdm::Receive(0);
 
-    if (rdm_data == nullptr)
-    {
+    if (rdm_data.empty()) {
         return;
     }
 
     uint8_t message_length = 0;
 
-    if (rdm_data[0] == E120_SC_RDM)
-    {
-        const auto* p = reinterpret_cast<const struct TRdmMessage*>(rdm_data);
+    if (rdm_data[0] == E120_SC_RDM) {
+        const auto* p = reinterpret_cast<const struct TRdmMessage*>(rdm_data.data());
         const auto kCommandClass = p->command_class;
         message_length = static_cast<uint8_t>(p->message_length + 2);
 
@@ -209,22 +196,17 @@ void Widget::ReceivedRdmPacket()
 
         SendHeader(kReceivedDmxPacket, static_cast<uint32_t>(1 + message_length));
         usb_send_byte(0); // RDM Receive status
-        SendData(rdm_data, message_length);
+        SendData(rdm_data.data(), message_length);
         SendFooter();
 
         const auto kParamId = static_cast<uint16_t>((p->param_id[0] << 8) + p->param_id[1]);
 
-        if ((kCommandClass == E120_DISCOVERY_COMMAND_RESPONSE) && (kParamId != E120_DISC_MUTE))
-        {
+        if ((kCommandClass == E120_DISCOVERY_COMMAND_RESPONSE) && (kParamId != E120_DISC_MUTE)) {
             RdmTimeOutMessage();
-        }
-        else
-        {
+        } else {
             send_rdm_packet_start_millis_ = 0;
         }
-    }
-    else if (rdm_data[0] == 0xFE)
-    {
+    } else if (rdm_data[0] == 0xFE) {
         message_length = 24;
 
 #if !defined(NO_HDMI_OUTPUT)
@@ -234,7 +216,7 @@ void Widget::ReceivedRdmPacket()
 
         SendHeader(kReceivedDmxPacket, static_cast<uint32_t>(1 + message_length));
         usb_send_byte(0); // RDM Receive status
-        SendData(rdm_data, message_length);
+        SendData(rdm_data.data(), message_length);
         SendFooter();
 
         RdmTimeOutMessage();
@@ -260,10 +242,8 @@ void Widget::ReceivedRdmPacket()
  *
  * @param data_length DMX data to send, beginning with the start code.
  */
-void Widget::SendDmxPacketRequestOutputOnly(uint16_t data_length)
-{
-    if (send_rdm_packet_start_millis_ != 0)
-    {
+void Widget::SendDmxPacketRequestOutputOnly(uint16_t data_length) {
+    if (send_rdm_packet_start_millis_ != 0) {
         return;
     }
 
@@ -286,8 +266,7 @@ void Widget::SendDmxPacketRequestOutputOnly(uint16_t data_length)
  *
  * @param data_length RDM data to send, beginning with the start code.
  */
-void Widget::SendRdmPacketRequest(uint16_t data_length)
-{
+void Widget::SendRdmPacketRequest(uint16_t data_length) {
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "SEND_RDM_PACKET_REQUEST");
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
@@ -311,20 +290,16 @@ void Widget::SendRdmPacketRequest(uint16_t data_length)
  * This function is called from Run
  *
  */
-void Widget::RdmTimeout()
-{
-    if (mode_ == widget::Mode::kRdmSniffer)
-    {
+void Widget::RdmTimeout() {
+    if (mode_ == widget::Mode::kRdmSniffer) {
         return;
     }
 
-    if (send_rdm_packet_start_millis_ == 0)
-    {
+    if (send_rdm_packet_start_millis_ == 0) {
         return;
     }
 
-    if (timing::Millis() - send_rdm_packet_start_millis_ < 1000U)
-    { // 1 second
+    if (timing::Millis() - send_rdm_packet_start_millis_ < 1000U) { // 1 second
         return;
     }
 
@@ -346,8 +321,7 @@ void Widget::RdmTimeout()
  * selected, the initial received DMX data is cleared to all zeros.
  *
  */
-void Widget::ReceiveDmxOnChange()
-{
+void Widget::ReceiveDmxOnChange() {
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "RECEIVE_DMX_ON_CHANGE");
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
@@ -370,20 +344,16 @@ void Widget::ReceiveDmxOnChange()
  * Widget receives a changed DMX packet from the DMX port, and the Receive DMX on Change
  * mode (\ref receive_dmx_on_change) is 'Send on data change only' (\ref SEND_ON_DATA_CHANGE_ONLY).
  */
-void Widget::ReceivedDmxChangeOfStatePacket()
-{
-    if (mode_ == widget::Mode::kRdmSniffer)
-    {
+void Widget::ReceivedDmxChangeOfStatePacket() {
+    if (mode_ == widget::Mode::kRdmSniffer) {
         return;
     }
 
-    if (is_rdm_discovery_running_ || (dmx::Direction::kInput != PortDirection(0)) || (widget::SendState::kAlways == send_state_))
-    {
+    if (is_rdm_discovery_running_ || (dmx::Direction::kInput != PortDirection(0)) || (widget::SendState::kAlways == send_state_)) {
         return;
     }
 
-    if (nullptr != Dmx::GetDmxChanged(0))
-    {
+    if (nullptr != Dmx::GetDmxChanged(0)) {
 #if !defined(NO_HDMI_OUTPUT)
         WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "RECEIVED_DMX_COS_TYPE");
         WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
@@ -398,8 +368,7 @@ void Widget::ReceivedDmxChangeOfStatePacket()
  * Get Widget Serial Number Reply (Label = 10 GET_WIDGET_PARAMS_REPLY)
  *
  */
-void Widget::GetSnReply()
-{
+void Widget::GetSnReply() {
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "GET_WIDGET_PARAMS_REPLY");
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
@@ -421,8 +390,7 @@ void Widget::GetSnReply()
  * This message requests the Widget to send an RDM Discovery Request packet out of the Widget
  * DMX port, and then receive an RDM Discovery Response.
  */
-void Widget::SendRdmDiscoveryRequest(uint16_t data_length)
-{
+void Widget::SendRdmDiscoveryRequest(uint16_t data_length) {
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "SEND_RDM_DISCOVERY_REQUEST");
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
@@ -445,8 +413,7 @@ void Widget::SendRdmDiscoveryRequest(uint16_t data_length)
  * (Label=12 RDM_TIMEOUT)
  *
  */
-void Widget::RdmTimeOutMessage()
-{
+void Widget::RdmTimeOutMessage() {
     const auto kMessageLength = 0;
 
 #if !defined(NO_HDMI_OUTPUT)
@@ -467,8 +434,7 @@ void Widget::RdmTimeOutMessage()
  *
  * Get Widget Manufacturer Reply (Label = 77  MANUFACTURER_LABEL)
  */
-void Widget::GetManufacturerReply()
-{
+void Widget::GetManufacturerReply() {
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "MANUFACTURER_LABEL");
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
@@ -498,8 +464,7 @@ void Widget::GetManufacturerReply()
  *
  * Get Widget Name Reply (Label = 78 GET_WIDGET_NAME_LABEL)
  */
-void Widget::GetNameReply()
-{
+void Widget::GetNameReply() {
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kInfo, "GET_WIDGET_NAME_LABEL");
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
@@ -529,14 +494,11 @@ void Widget::GetNameReply()
  *
  * This function is called from Run
  */
-void Widget::ReceiveDataFromHost()
-{
-    if (usb_read_is_byte_available())
-    {
+void Widget::ReceiveDataFromHost() {
+    if (usb_read_is_byte_available()) {
         const auto kByte = usb_read_byte();
 
-        if (static_cast<uint8_t>(widget::Amf::kStartCode) == kByte)
-        {
+        if (static_cast<uint8_t>(widget::Amf::kStartCode) == kByte) {
             const auto kLabel = usb_read_byte();
             const auto kLsb = usb_read_byte();
             const auto kMsb = usb_read_byte();
@@ -544,8 +506,7 @@ void Widget::ReceiveDataFromHost()
 
             uint32_t i;
 
-            for (i = 0; i < kDataLength; i++)
-            {
+            for (i = 0; i < kDataLength; i++) {
                 data_[i] = usb_read_byte();
             }
 
@@ -555,8 +516,7 @@ void Widget::ReceiveDataFromHost()
             WidgetMonitor::Line(widgetmonitor::MonitorLine::kLabel, "L:%d:%d(%d)", kLabel, kDataLength, i);
 #endif // NO_HDMI_OUTPUT
 
-            switch (kLabel)
-            {
+            switch (kLabel) {
                 case kGetWidgetParams:
                     GetParamsReply();
                     break;
