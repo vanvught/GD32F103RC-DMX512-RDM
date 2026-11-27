@@ -185,7 +185,7 @@ void Widget::ReceivedRdmPacket() {
     uint8_t message_length = 0;
 
     if (rdm_data[0] == E120_SC_RDM) {
-        const auto* p = reinterpret_cast<const struct TRdmMessage*>(rdm_data.data());
+        const auto* p = reinterpret_cast<const struct e120::Message*>(rdm_data.data());
         const auto kCommandClass = p->command_class;
         message_length = static_cast<uint8_t>(p->message_length + 2);
 
@@ -272,7 +272,7 @@ void Widget::SendRdmPacketRequest(uint16_t data_length) {
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
 #endif // NO_HDMI_OUTPUT
 
-    const auto* data = reinterpret_cast<const struct TRdmMessage*>(data_);
+    const auto* data = reinterpret_cast<const struct e120::Message*>(data_);
 
     is_rdm_discovery_running_ = (data->command_class == E120_DISCOVERY_COMMAND);
 
