@@ -276,7 +276,7 @@ void Widget::SendRdmPacketRequest(uint16_t data_length) {
 
     is_rdm_discovery_running_ = (data->command_class == E120_DISCOVERY_COMMAND);
 
-    Rdm::TransmitRaw(0, data_, data_length);
+    Rdm::TransmitRaw(0, {data_, data_length});
 
     send_rdm_packet_start_millis_ = timing::Millis();
 
@@ -396,7 +396,7 @@ void Widget::SendRdmDiscoveryRequest(uint16_t data_length) {
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
 #endif // NO_HDMI_OUTPUT
 
-    Rdm::TransmitRaw(0, data_, data_length);
+    Rdm::TransmitRaw(0, {data_, data_length});
 
     is_rdm_discovery_running_ = true;
     send_rdm_packet_start_millis_ = timing::Millis();
